@@ -1,26 +1,85 @@
-import { Injectable } from '@nestjs/common';
-import { CreateAuthDto } from './dto/create-auth.dto';
-import { UpdateAuthDto } from './dto/update-auth.dto';
+import {
+  BadRequestException,
+  ForbiddenException,
+  Injectable,
+} from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
+import { ConfigService } from '@nestjs/config';
+import * as argon from 'argon2';
+import { omit } from 'rambda';
+import { RegisterDto } from './dto/register.dto';
+import { LoginDto } from './dto/login.dto';
+import { PrismaService } from '@modules/prisma/prisma.service';
+import { User } from '@prisma/client';
 
 @Injectable()
 export class AuthService {
-  create(createAuthDto: CreateAuthDto) {
-    return 'This action adds a new auth';
+  constructor(
+    private jwt: JwtService,
+    private config: ConfigService,
+    private prisma: PrismaService,
+  ) {}
+
+  async validateToken(user: User, token: string) {
+    return { username: user.name, accessToken: token };
   }
 
-  findAll() {
-    return `This action returns all auth`;
+  async register(dto: RegisterDto) {
+    if (await this.prisma.user.findFirst({ where: { email: dto.email } }))
+      throw new BadRequestException('This email is already taken');
+
+    const hashedPassword = await argon.hash(dto.password);
+
+    try {
+      const user = await this.prisma.user.create({
+        data: {
+          ...omit(['password'], dto),
+          hashedPassword,
+        },
+      });
+
+      delete user.hashedPassword;
+      return this.signToken(user.id, user.email, user.name);
+    } catch (err) {
+      throw err;
+    }
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} auth`;
+  async login(dto: LoginDto) {
+    const user = await this.prisma.user.findFirst({
+      where: {
+        email: dto.email,
+      },
+    });
+
+    if (!user) throw new ForbiddenException('Invalid identifier or password');
+
+    const passwordValid = await argon.verify(user.hashedPassword, dto.password);
+
+    if (!passwordValid)
+      throw new ForbiddenException('Invalid identifier or password');
+
+    return this.signToken(user.id, user.email, user.name);
   }
 
-  update(id: number, updateAuthDto: UpdateAuthDto) {
-    return `This action updates a #${id} auth`;
-  }
+  async signToken(
+    userId: string | number,
+    email: string,
+    name: string,
+  ): Promise<{ accessToken: string; name: string }> {
+    const payload = {
+      sub: userId,
+      email,
+    };
 
-  remove(id: number) {
-    return `This action removes a #${id} auth`;
+    const token = await this.jwt.signAsync(payload, {
+      expiresIn: '7d',
+      secret: this.config.get('JWT_SECRET'),
+    });
+
+    return {
+      accessToken: token,
+      name,
+    };
   }
 }

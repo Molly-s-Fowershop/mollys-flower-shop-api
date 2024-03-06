@@ -1,11 +1,3 @@
-/*
-  Warnings:
-
-  - Added the required column `hashedPassword` to the `users` table without a default value. This is not possible if the table is not empty.
-  - Added the required column `lastname` to the `users` table without a default value. This is not possible if the table is not empty.
-  - Made the column `name` on table `users` required. This step will fail if there are existing NULL values in that column.
-
-*/
 -- CreateEnum
 CREATE TYPE "DiscountType" AS ENUM ('PERCENTAGE', 'AMOUNT');
 
@@ -18,10 +10,17 @@ CREATE TYPE "MediaContextType" AS ENUM ('PRODUCT', 'CATEGORY', 'OFFER', 'USER');
 -- CreateEnum
 CREATE TYPE "NotificationType" AS ENUM ('ORDER', 'OFFER', 'COUPON');
 
--- AlterTable
-ALTER TABLE "users" ADD COLUMN     "hashedPassword" TEXT NOT NULL,
-ADD COLUMN     "lastname" TEXT NOT NULL,
-ALTER COLUMN "name" SET NOT NULL;
+-- CreateTable
+CREATE TABLE "users" (
+    "id" SERIAL NOT NULL,
+    "email" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
+    "lastname" TEXT NOT NULL,
+    "hashedPassword" TEXT NOT NULL,
+    "fullName" TEXT NOT NULL,
+
+    CONSTRAINT "users_pkey" PRIMARY KEY ("id")
+);
 
 -- CreateTable
 CREATE TABLE "Address" (
@@ -249,6 +248,9 @@ CREATE TABLE "BroadcastNotification" (
 
     CONSTRAINT "BroadcastNotification_pkey" PRIMARY KEY ("id")
 );
+
+-- CreateIndex
+CREATE UNIQUE INDEX "users_email_key" ON "users"("email");
 
 -- AddForeignKey
 ALTER TABLE "Address" ADD CONSTRAINT "Address_userId_fkey" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
