@@ -1,0 +1,279 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Clients
+
+model User {
+  id               Int                @id @default(autoincrement())
+  name             String
+  lastname         String
+  email            String             @unique
+  hashedPassword   String
+  Address          Address[]
+  Cart             Cart[]
+  CouponCodeUse    CouponCodeUse[]
+  UserNotification UserNotification[]
+
+  @@map("users")
+}
+
+model Address {
+  id           Int         @id @default(autoincrement())
+  userId       Int
+  user         User        @relation(fields: [userId], references: [id])
+  street       String
+  streetNumber String
+  city         String
+  state        String
+  postalCode   String
+  country      String
+  OrderItem    OrderItem[]
+}
+
+// Inventory
+
+model Product {
+  id                        Int                         @id @default(autoincrement())
+  name                      String
+  description               String
+  categoryId                Int
+  category                  Category                    @relation(fields: [categoryId], references: [id])
+  ProductCustomizationGroup ProductCustomizationGroup[]
+  OrderItem                 OrderItem[]
+  CartItem                  CartItem[]
+  OfferProduct              OfferProduct[]
+  MediaProduct              MediaProduct[]
+}
+
+model Category {
+  id            Int             @id @default(autoincrement())
+  name          String
+  description   String
+  products      Product[]
+  OfferCategory OfferCategory[]
+  MediaCategory MediaCategory[]
+}
+
+// Product Customization
+
+model CustomizationGroup {
+  id                        Int                         @id @default(autoincrement())
+  name                      String
+  Customization             Customization[]
+  ProductCustomizationGroup ProductCustomizationGroup[]
+}
+
+model Customization {
+  id                    Int                     @id @default(autoincrement())
+  name                  String
+  price                 Float
+  customizationGroupId  Int
+  customizationGroup    CustomizationGroup      @relation(fields: [customizationGroupId], references: [id])
+  CartItemCustomization CartItemCustomization[]
+}
+
+model ProductCustomizationGroup {
+  id                   Int                @id @default(autoincrement())
+  productId            Int
+  product              Product            @relation(fields: [productId], references: [id])
+  customizationGroupId Int
+  customizationGroup   CustomizationGroup @relation(fields: [customizationGroupId], references: [id])
+}
+
+// Orders
+
+model Order {
+  id        Int         @id @default(autoincrement())
+  userId    Int
+  couponId  Int?
+  OrderItem OrderItem[]
+}
+
+model OrderItem {
+  id                Int      @id @default(autoincrement())
+  orderId           Int
+  order             Order    @relation(fields: [orderId], references: [id])
+  productId         Int
+  product           Product  @relation(fields: [productId], references: [id])
+  quantity          Int
+  deliverDate       DateTime
+  deliverTime       String
+  deliveryAddressId Int?
+  deliveryAddress   Address? @relation(fields: [deliveryAddressId], references: [id])
+}
+
+// Carts
+
+model Cart {
+  id       Int        @id @default(autoincrement())
+  userId   Int
+  user     User       @relation(fields: [userId], references: [id])
+  CartItem CartItem[]
+}
+
+model CartItem {
+  id                    Int                     @id @default(autoincrement())
+  cartId                Int
+  cart                  Cart                    @relation(fields: [cartId], references: [id])
+  productId             Int
+  product               Product                 @relation(fields: [productId], references: [id])
+  quantity              Int
+  CartItemCustomization CartItemCustomization[]
+}
+
+model CartItemCustomization {
+  id              Int           @id @default(autoincrement())
+  cartItemId      Int
+  cartItem        CartItem      @relation(fields: [cartItemId], references: [id])
+  customizationId Int
+  customization   Customization @relation(fields: [customizationId], references: [id])
+}
+
+// Offers and Coupons
+
+enum DiscountType {
+  PERCENTAGE
+  AMOUNT
+}
+
+enum OfferContextType {
+  PRODUCT
+  CATEGORY
+}
+
+model Offer {
+  id            Int              @id @default(autoincrement())
+  name          String
+  description   String
+  maxUses       Int
+  discountType  DiscountType
+  discountValue Float
+  isAvailable   Boolean
+  startDate     DateTime
+  endDate       DateTime
+  offerContext  OfferContextType
+  OfferProduct  OfferProduct[]
+  OfferCategory OfferCategory[]
+  CouponCode    CouponCode[]
+  MediaOffer    MediaOffer[]
+}
+
+model OfferProduct {
+  id        Int     @id @default(autoincrement())
+  offerId   Int
+  offer     Offer   @relation(fields: [offerId], references: [id])
+  productId Int
+  product   Product @relation(fields: [productId], references: [id])
+}
+
+model OfferCategory {
+  id         Int      @id @default(autoincrement())
+  offerId    Int
+  offer      Offer    @relation(fields: [offerId], references: [id])
+  categoryId Int
+  category   Category @relation(fields: [categoryId], references: [id])
+}
+
+model CouponCode {
+  id            Int             @id @default(autoincrement())
+  code          String
+  description   String
+  offerId       Int
+  offer         Offer           @relation(fields: [offerId], references: [id])
+  CouponCodeUse CouponCodeUse[]
+}
+
+model CouponCodeUse {
+  id       Int        @id @default(autoincrement())
+  couponId Int
+  coupon   CouponCode @relation(fields: [couponId], references: [id])
+  userId   Int
+  user     User       @relation(fields: [userId], references: [id])
+}
+
+// Media
+
+enum MediaContextType {
+  PRODUCT
+  CATEGORY
+  OFFER
+  USER
+}
+
+model Media {
+  id            Int              @id @default(autoincrement())
+  url           String
+  context       MediaContextType
+  MediaProduct  MediaProduct[]
+  MediaCategory MediaCategory[]
+  MediaOffer    MediaOffer[]
+}
+
+model MediaProduct {
+  id        Int     @id @default(autoincrement())
+  mediaId   Int
+  media     Media   @relation(fields: [mediaId], references: [id])
+  productId Int
+  product   Product @relation(fields: [productId], references: [id])
+}
+
+model MediaCategory {
+  id         Int      @id @default(autoincrement())
+  mediaId    Int
+  media      Media    @relation(fields: [mediaId], references: [id])
+  categoryId Int
+  category   Category @relation(fields: [categoryId], references: [id])
+}
+
+model MediaOffer {
+  id      Int   @id @default(autoincrement())
+  mediaId Int
+  media   Media @relation(fields: [mediaId], references: [id])
+  offerId Int
+  offer   Offer @relation(fields: [offerId], references: [id])
+}
+
+// Notifications
+
+enum NotificationType {
+  ORDER
+  OFFER
+  COUPON
+}
+
+model Notification {
+  id                    Int                     @id @default(autoincrement())
+  title                 String
+  content               String
+  type                  NotificationType
+  sentAt                DateTime
+  UserNotification      UserNotification[]
+  BroadcastNotification BroadcastNotification[]
+}
+
+model UserNotification {
+  id             Int          @id @default(autoincrement())
+  userId         Int
+  user           User         @relation(fields: [userId], references: [id])
+  notificationId Int
+  notification   Notification @relation(fields: [notificationId], references: [id])
+}
+
+model BroadcastNotification {
+  id             Int          @id @default(autoincrement())
+  notificationId Int
+  notification   Notification @relation(fields: [notificationId], references: [id])
+  expiresAt      DateTime?
+}
