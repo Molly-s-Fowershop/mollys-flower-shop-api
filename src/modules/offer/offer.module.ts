@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
-import { OfferService } from './offer.service';
-import { OfferController } from './offer.controller';
+import { OfferService } from './services/offer.service';
+import { OfferController } from './controllers/offer.controller';
 
 @Module({
   controllers: [OfferController],

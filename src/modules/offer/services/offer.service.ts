@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { CreateOfferDto } from './dto/create-offer.dto';
-import { UpdateOfferDto } from './dto/update-offer.dto';
+import { CreateOfferDto } from '../dto/create-offer.dto';
+import { UpdateOfferDto } from '../dto/update-offer.dto';
 
 @Injectable()
 export class OfferService {

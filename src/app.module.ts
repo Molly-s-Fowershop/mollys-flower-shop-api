@@ -1,5 +1,4 @@
 import { Module } from '@nestjs/common';
-import { AddressModule } from './modules/address/address.module';
 import { UserModule } from './modules/user/user.module';
 import { ProductModule } from './modules/product/product.module';
 import { OrderModule } from './modules/order/order.module';
@@ -10,6 +9,15 @@ import { MediaModule } from './modules/media/media.module';
 import { AuthModule } from './modules/auth/auth.module';
 
 @Module({
-  imports: [AddressModule, UserModule, ProductModule, OrderModule, CartModule, OfferModule, NotificationModule, MediaModule, AuthModule],
+  imports: [
+    UserModule,
+    ProductModule,
+    OrderModule,
+    CartModule,
+    OfferModule,
+    NotificationModule,
+    MediaModule,
+    AuthModule,
+  ],
 })
 export class AppModule {}
