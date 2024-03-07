@@ -16,7 +16,7 @@ export class WishlistController {
   }
 
   @Patch('/')
-  updateItem(@GetUser() user: User, @Body() dto: UpdateWishlistDto) {
+  update(@GetUser() user: User, @Body() dto: UpdateWishlistDto) {
     return this.wishlistService.updateItem(user, dto);
   }
 }
