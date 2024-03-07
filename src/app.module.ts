@@ -9,10 +9,13 @@ import { MediaModule } from './modules/media/media.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { ConfigModule } from '@nestjs/config';
 import { PrismaModule } from './modules/prisma/prisma.module';
+import { WishlistModule } from './modules/wishlist/wishlist.module';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
+    EventEmitterModule.forRoot(),
     PrismaModule,
     AuthModule,
     UserModule,
@@ -22,6 +25,7 @@ import { PrismaModule } from './modules/prisma/prisma.module';
     OfferModule,
     NotificationModule,
     MediaModule,
+    WishlistModule,
   ],
 })
 export class AppModule {}
