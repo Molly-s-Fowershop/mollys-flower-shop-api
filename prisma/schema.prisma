@@ -21,14 +21,14 @@ model User {
   name             String
   lastname         String
   hashedPassword   String
-  Address          Address[]
-  Cart             Cart[]
-  CouponCodeUse    CouponCodeUse[]
-  UserNotification UserNotification[]
+  address          Address[]
+  cart             Cart[]
+  couponCodeUse    CouponCodeUse[]
+  userNotification UserNotification[]
 
   updatedAt DateTime   @updatedAt
   createdAt DateTime   @default(now())
-  WishList  Wishlist[]
+  wishList  Wishlist[]
 
   @@map("users")
 }
@@ -43,7 +43,7 @@ model Address {
   state        String
   postalCode   String
   country      String
-  OrderItem    OrderItem[]
+  orderItem    OrderItem[]
 
   updatedAt DateTime @updatedAt
   createdAt DateTime @default(now())
@@ -57,15 +57,15 @@ model Product {
   description               String
   categoryId                Int
   category                  Category                    @relation(fields: [categoryId], references: [id])
-  ProductCustomizationGroup ProductCustomizationGroup[]
-  OrderItem                 OrderItem[]
-  CartItem                  CartItem[]
-  OfferProduct              OfferProduct[]
-  MediaProduct              MediaProduct[]
+  productCustomizationGroup ProductCustomizationGroup[]
+  orderItem                 OrderItem[]
+  cartItem                  CartItem[]
+  offerProduct              OfferProduct[]
+  mediaProduct              MediaProduct[]
 
   updatedAt    DateTime       @updatedAt
   createdAt    DateTime       @default(now())
-  WishListItem WishlistItem[]
+  wishListItem WishlistItem[]
 }
 
 model Category {
@@ -73,8 +73,8 @@ model Category {
   name          String
   description   String
   products      Product[]
-  OfferCategory OfferCategory[]
-  MediaCategory MediaCategory[]
+  offerCategory OfferCategory[]
+  mediaCategory MediaCategory[]
 
   updatedAt DateTime @updatedAt
   createdAt DateTime @default(now())
@@ -85,8 +85,8 @@ model Category {
 model CustomizationGroup {
   id                        Int                         @id @default(autoincrement())
   name                      String
-  Customization             Customization[]
-  ProductCustomizationGroup ProductCustomizationGroup[]
+  customization             Customization[]
+  productCustomizationGroup ProductCustomizationGroup[]
 
   updatedAt DateTime @updatedAt
   createdAt DateTime @default(now())
@@ -98,7 +98,7 @@ model Customization {
   price                 Float
   customizationGroupId  Int
   customizationGroup    CustomizationGroup      @relation(fields: [customizationGroupId], references: [id])
-  CartItemCustomization CartItemCustomization[]
+  cartItemCustomization CartItemCustomization[]
 
   updatedAt DateTime @updatedAt
   createdAt DateTime @default(now())
@@ -121,7 +121,7 @@ model Order {
   id        Int         @id @default(autoincrement())
   userId    Int
   couponId  Int?
-  OrderItem OrderItem[]
+  orderItem OrderItem[]
 
   updatedAt DateTime @updatedAt
   createdAt DateTime @default(now())
@@ -149,7 +149,7 @@ model Cart {
   id       Int        @id @default(autoincrement())
   userId   Int
   user     User       @relation(fields: [userId], references: [id])
-  CartItem CartItem[]
+  cartItem CartItem[]
 
   updatedAt DateTime @updatedAt
   createdAt DateTime @default(now())
@@ -162,7 +162,7 @@ model CartItem {
   productId             Int
   product               Product                 @relation(fields: [productId], references: [id])
   quantity              Int
-  CartItemCustomization CartItemCustomization[]
+  cartItemCustomization CartItemCustomization[]
 
   updatedAt DateTime @updatedAt
   createdAt DateTime @default(now())
@@ -202,10 +202,10 @@ model Offer {
   startDate     DateTime
   endDate       DateTime
   offerContext  OfferContextType
-  OfferProduct  OfferProduct[]
-  OfferCategory OfferCategory[]
-  CouponCode    CouponCode[]
-  MediaOffer    MediaOffer[]
+  offerProduct  OfferProduct[]
+  offerCategory OfferCategory[]
+  couponCode    CouponCode[]
+  mediaOffer    MediaOffer[]
 
   updatedAt DateTime @updatedAt
   createdAt DateTime @default(now())
@@ -239,7 +239,7 @@ model CouponCode {
   description   String
   offerId       Int
   offer         Offer           @relation(fields: [offerId], references: [id])
-  CouponCodeUse CouponCodeUse[]
+  couponCodeUse CouponCodeUse[]
 
   updatedAt DateTime @updatedAt
   createdAt DateTime @default(now())
@@ -269,9 +269,9 @@ model Media {
   id            Int              @id @default(autoincrement())
   url           String
   context       MediaContextType
-  MediaProduct  MediaProduct[]
-  MediaCategory MediaCategory[]
-  MediaOffer    MediaOffer[]
+  mediaProduct  MediaProduct[]
+  mediaCategory MediaCategory[]
+  mediaOffer    MediaOffer[]
 }
 
 model MediaProduct {
@@ -312,8 +312,8 @@ model Notification {
   content               String
   type                  NotificationType
   sentAt                DateTime
-  UserNotification      UserNotification[]
-  BroadcastNotification BroadcastNotification[]
+  userNotification      UserNotification[]
+  broadcastNotification BroadcastNotification[]
 }
 
 model UserNotification {
