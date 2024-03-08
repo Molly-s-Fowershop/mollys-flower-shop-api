@@ -11,7 +11,7 @@ import { ConfigModule } from '@nestjs/config';
 import { PrismaModule } from './modules/prisma/prisma.module';
 import { WishlistModule } from './modules/wishlist/wishlist.module';
 import { EventEmitterModule } from '@nestjs/event-emitter';
-import { CategoryController } from './category/controllers/category/category.controller';
+import { CategoryModule } from './modules/category/category.module';
 
 @Module({
   imports: [
@@ -20,6 +20,7 @@ import { CategoryController } from './category/controllers/category/category.con
     PrismaModule,
     AuthModule,
     UserModule,
+    CategoryModule,
     ProductModule,
     OrderModule,
     CartModule,
@@ -28,6 +29,5 @@ import { CategoryController } from './category/controllers/category/category.con
     MediaModule,
     WishlistModule,
   ],
-  controllers: [CategoryController],
 })
 export class AppModule {}

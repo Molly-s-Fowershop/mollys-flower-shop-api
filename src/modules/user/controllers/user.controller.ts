@@ -6,11 +6,13 @@ import {
   Param,
   Delete,
   UnprocessableEntityException,
+  UseGuards,
 } from '@nestjs/common';
 import { UserService } from '../services/user.service';
 import { UpdateUserDto } from '../dto/update-user.dto';
+import { JwtGuard } from '@/modules/auth/guard';
 
-// @UseGuards(JwtGuard)
+@UseGuards(JwtGuard)
 @Controller('users')
 export class UserController {
   constructor(private readonly userService: UserService) {}
