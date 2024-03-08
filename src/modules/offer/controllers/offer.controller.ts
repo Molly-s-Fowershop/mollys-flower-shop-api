@@ -6,6 +6,7 @@ import {
   Patch,
   Param,
   Delete,
+  ParseIntPipe,
 } from '@nestjs/common';
 import { OfferService } from '../services/offer.service';
 import { CreateOfferDto } from '../dto/create-offer.dto';
@@ -26,17 +27,20 @@ export class OfferController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
+  findOne(@Param('id', ParseIntPipe) id: number) {
     return this.offerService.findOne(+id);
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateOfferDto: UpdateOfferDto) {
+  update(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() updateOfferDto: UpdateOfferDto,
+  ) {
     return this.offerService.update(+id, updateOfferDto);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
+  remove(@Param('id', ParseIntPipe) id: number) {
     return this.offerService.remove(+id);
   }
 }
