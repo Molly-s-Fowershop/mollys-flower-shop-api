@@ -5,6 +5,7 @@ import {
   Delete,
   Get,
   Param,
+  ParseIntPipe,
   Patch,
   Post,
   UseGuards,
@@ -23,8 +24,8 @@ export class CategoryController {
   }
 
   @Get(':id')
-  findOne(id: string) {
-    return this.categoryService.findOne(+id);
+  findOne(@Param('id', ParseIntPipe) id: number) {
+    return this.categoryService.findOne(id);
   }
 
   @Post()
@@ -33,13 +34,15 @@ export class CategoryController {
   }
 
   @Patch(':id')
-  update(@Body() dto: UpdateCategoryDto, @Param('id') id: string) {
-    console.log('id', id);
-    return this.categoryService.update(+id, dto);
+  update(
+    @Body() dto: UpdateCategoryDto,
+    @Param('id', ParseIntPipe) id: number,
+  ) {
+    return this.categoryService.update(id, dto);
   }
 
   @Delete(':id')
-  remove(id: string) {
-    return this.categoryService.remove(+id);
+  remove(@Param('id', ParseIntPipe) id: number) {
+    return this.categoryService.remove(id);
   }
 }

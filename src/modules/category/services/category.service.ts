@@ -1,5 +1,5 @@
 import { PrismaService } from '@/modules/prisma/prisma.service';
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateCategoryDto, UpdateCategoryDto } from '@modules/category/dto';
 
 @Injectable()
@@ -23,9 +23,8 @@ export class CategoryService {
     });
 
     if (!category) {
-      throw new Error('Category not found');
+      throw new NotFoundException('Category not found');
     }
-
     return category;
   }
 
