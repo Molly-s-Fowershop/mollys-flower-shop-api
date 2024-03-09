@@ -18,6 +18,26 @@ export class ProductService {
             name: true,
           },
         },
+        productDetails: {
+          select: {
+            id: true,
+            price: true,
+            stock: true,
+            type: true,
+          },
+        },
+        productOffers: {
+          select: {
+            offer: {
+              select: {
+                id: true,
+                discountValue: true,
+                startDate: true,
+                endDate: true,
+              },
+            },
+          },
+        },
       },
     });
   }
@@ -45,7 +65,6 @@ export class ProductService {
 
   async create(dto: CreateProductDto) {
     const { categoryId, ...rest } = dto;
-
     await this.categoryService.findOne(categoryId);
 
     return await this.prisma.product.create({
@@ -56,33 +75,28 @@ export class ProductService {
             id: dto.categoryId,
           },
         },
+        productDetails: {
+          create: {
+            ...dto.productDetails,
+          },
+        },
       },
       include: {
         category: true,
+        productDetails: true,
       },
     });
   }
 
-  async update(id: number, updateProductDto: UpdateProductDto) {
+  async update(id: number, dto: UpdateProductDto) {
     await this.findOne(id);
-
-    const { categoryId, ...rest } = updateProductDto;
-
-    if (categoryId) {
-      await this.categoryService.findOne(categoryId);
-    }
 
     return await this.prisma.product.update({
       where: {
         id,
       },
       data: {
-        ...rest,
-        category: categoryId && {
-          connect: {
-            id: categoryId,
-          },
-        },
+        ...dto,
       },
       include: {
         category: true,

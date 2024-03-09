@@ -45,37 +45,71 @@ model Address {
   country      String
   orderItem    OrderItem[]
 
-  updatedAt DateTime @updatedAt
-  createdAt DateTime @default(now())
+  updatedAt       DateTime          @updatedAt
+  createdAt       DateTime          @default(now())
+  DeliveryDetails DeliveryDetails[]
 }
 
 // Inventory
 
+enum ProductType {
+  STANDARD
+  CUSTOMIZABLE
+}
+
 model Product {
-  id                        Int                         @id @default(autoincrement())
-  name                      String
-  description               String
-  price                     Float
-  categoryId                Int
-  category                  Category                    @relation(fields: [categoryId], references: [id])
-  productCustomizationGroup ProductCustomizationGroup[]
-  orderItem                 OrderItem[]
-  cartItem                  CartItem[]
-  offerProduct              OfferProduct[]
-  mediaProduct              MediaProduct[]
-  wishListItem              WishlistItem[]
+  id             Int             @id @default(autoincrement())
+  name           String
+  description    String
+  productDetails ProductDetails?
+  orderItem      OrderItem[]
+  cartItem       CartItem[]
+  media          Media[]
+  categoryId     Int
+  category       Category?       @relation(fields: [categoryId], references: [id])
+  productOffers  ProductOffer[]
+
+  subCategories      SubCategory[]
+  wishListItem       WishlistItem[]
+  customizationGroup CustomizationGroup[]
+
+  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now())
+}
+
+model ProductDetails {
+  id          Int         @id @default(autoincrement())
+  product     Product     @relation(fields: [productId], references: [id])
+  productId   Int         @unique
+  price       Float
+  stock       Int
+  type        ProductType @default(STANDARD)
+  limitPerDay Int?
+  Media       Media[]
 
   updatedAt DateTime @updatedAt
   createdAt DateTime @default(now())
 }
 
 model Category {
-  id            Int             @id @default(autoincrement())
-  name          String
-  description   String
-  products      Product[]
-  offerCategory OfferCategory[]
-  mediaCategory MediaCategory[]
+  id             Int             @id @default(autoincrement())
+  name           String
+  description    String
+  products       Product[]
+  SubCategory    SubCategory[]
+  categoryOffers CategoryOffer[]
+
+  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now())
+}
+
+model SubCategory {
+  id          Int       @id @default(autoincrement())
+  name        String
+  description String
+  category    Category  @relation(fields: [categoryId], references: [id])
+  categoryId  Int
+  products    Product[]
 
   updatedAt DateTime @updatedAt
   createdAt DateTime @default(now())
@@ -84,33 +118,22 @@ model Category {
 // Product Customization
 
 model CustomizationGroup {
-  id                        Int                         @id @default(autoincrement())
-  name                      String
-  customization             Customization[]
-  productCustomizationGroup ProductCustomizationGroup[]
+  id            Int             @id @default(autoincrement())
+  name          String
+  customization Customization[]
+  products      Product[]
 
   updatedAt DateTime @updatedAt
   createdAt DateTime @default(now())
 }
 
 model Customization {
-  id                    Int                     @id @default(autoincrement())
-  name                  String
-  price                 Float
-  customizationGroupId  Int
-  customizationGroup    CustomizationGroup      @relation(fields: [customizationGroupId], references: [id])
-  cartItemCustomization CartItemCustomization[]
-
-  updatedAt DateTime @updatedAt
-  createdAt DateTime @default(now())
-}
-
-model ProductCustomizationGroup {
   id                   Int                @id @default(autoincrement())
-  productId            Int
-  product              Product            @relation(fields: [productId], references: [id])
+  name                 String
+  price                Float
   customizationGroupId Int
   customizationGroup   CustomizationGroup @relation(fields: [customizationGroupId], references: [id])
+  cartItem             CartItem[]
 
   updatedAt DateTime @updatedAt
   createdAt DateTime @default(now())
@@ -129,19 +152,28 @@ model Order {
 }
 
 model OrderItem {
-  id                Int      @id @default(autoincrement())
-  orderId           Int
-  order             Order    @relation(fields: [orderId], references: [id])
-  productId         Int
-  product           Product  @relation(fields: [productId], references: [id])
-  quantity          Int
-  deliverDate       DateTime
-  deliverTime       String
-  deliveryAddressId Int?
-  deliveryAddress   Address? @relation(fields: [deliveryAddressId], references: [id])
+  id              Int               @id @default(autoincrement())
+  orderId         Int
+  order           Order             @relation(fields: [orderId], references: [id])
+  productId       Int
+  product         Product           @relation(fields: [productId], references: [id])
+  quantity        Int
+  deliveryDetails DeliveryDetails[]
 
   updatedAt DateTime @updatedAt
   createdAt DateTime @default(now())
+  Address   Address? @relation(fields: [addressId], references: [id])
+  addressId Int?
+}
+
+model DeliveryDetails {
+  id                Int       @id @default(autoincrement())
+  itemId            Int
+  item              OrderItem @relation(fields: [itemId], references: [id])
+  deliverDate       DateTime
+  deliverTime       String
+  deliveryAddressId Int?
+  deliveryAddress   Address?  @relation(fields: [deliveryAddressId], references: [id])
 }
 
 // Carts
@@ -157,24 +189,13 @@ model Cart {
 }
 
 model CartItem {
-  id                    Int                     @id @default(autoincrement())
-  cartId                Int
-  cart                  Cart                    @relation(fields: [cartId], references: [id])
-  productId             Int
-  product               Product                 @relation(fields: [productId], references: [id])
-  quantity              Int
-  cartItemCustomization CartItemCustomization[]
-
-  updatedAt DateTime @updatedAt
-  createdAt DateTime @default(now())
-}
-
-model CartItemCustomization {
-  id              Int           @id @default(autoincrement())
-  cartItemId      Int
-  cartItem        CartItem      @relation(fields: [cartItemId], references: [id])
-  customizationId Int
-  customization   Customization @relation(fields: [customizationId], references: [id])
+  id             Int             @id @default(autoincrement())
+  cartId         Int
+  cart           Cart            @relation(fields: [cartId], references: [id])
+  productId      Int
+  product        Product         @relation(fields: [productId], references: [id])
+  quantity       Int
+  customizations Customization[]
 
   updatedAt DateTime @updatedAt
   createdAt DateTime @default(now())
@@ -203,16 +224,16 @@ model Offer {
   startDate     DateTime
   endDate       DateTime
   offerContext  OfferContextType
-  offerProduct  OfferProduct[]
-  offerCategory OfferCategory[]
   couponCode    CouponCode[]
-  mediaOffer    MediaOffer[]
+  media         Media[]
 
-  updatedAt DateTime @updatedAt
-  createdAt DateTime @default(now())
+  updatedAt     DateTime        @updatedAt
+  createdAt     DateTime        @default(now())
+  ProductOffer  ProductOffer[]
+  CategoryOffer CategoryOffer[]
 }
 
-model OfferProduct {
+model ProductOffer {
   id        Int     @id @default(autoincrement())
   offerId   Int
   offer     Offer   @relation(fields: [offerId], references: [id])
@@ -223,7 +244,7 @@ model OfferProduct {
   createdAt DateTime @default(now())
 }
 
-model OfferCategory {
+model CategoryOffer {
   id         Int      @id @default(autoincrement())
   offerId    Int
   offer      Offer    @relation(fields: [offerId], references: [id])
@@ -267,36 +288,13 @@ enum MediaContextType {
 }
 
 model Media {
-  id            Int              @id @default(autoincrement())
-  url           String
-  context       MediaContextType
-  mediaProduct  MediaProduct[]
-  mediaCategory MediaCategory[]
-  mediaOffer    MediaOffer[]
-}
-
-model MediaProduct {
-  id        Int     @id @default(autoincrement())
-  mediaId   Int
-  media     Media   @relation(fields: [mediaId], references: [id])
-  productId Int
-  product   Product @relation(fields: [productId], references: [id])
-}
-
-model MediaCategory {
-  id         Int      @id @default(autoincrement())
-  mediaId    Int
-  media      Media    @relation(fields: [mediaId], references: [id])
-  categoryId Int
-  category   Category @relation(fields: [categoryId], references: [id])
-}
-
-model MediaOffer {
-  id      Int   @id @default(autoincrement())
-  mediaId Int
-  media   Media @relation(fields: [mediaId], references: [id])
-  offerId Int
-  offer   Offer @relation(fields: [offerId], references: [id])
+  id               Int              @id @default(autoincrement())
+  url              String
+  context          MediaContextType
+  products         Product[]
+  offers           Offer[]
+  ProductDetails   ProductDetails?  @relation(fields: [productDetailsId], references: [id])
+  productDetailsId Int?
 }
 
 // Notifications
