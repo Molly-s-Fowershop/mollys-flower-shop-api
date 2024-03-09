@@ -20,6 +20,15 @@ export class CategoryService {
   async findOne(categoryId: number) {
     const category = await this.prisma.category.findUnique({
       where: { id: categoryId },
+      include: {
+        subcategories: {
+          select: {
+            id: true,
+            name: true,
+            description: true,
+          },
+        },
+      },
     });
 
     if (!category) {

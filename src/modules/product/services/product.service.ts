@@ -10,7 +10,7 @@ export class ProductService {
     private categoryService: CategoryService,
   ) {}
   async findAll() {
-    return await this.prisma.product.findMany({
+    const products = await this.prisma.product.findMany({
       include: {
         category: {
           select: {
@@ -40,6 +40,13 @@ export class ProductService {
         },
       },
     });
+
+    return {
+      data: products,
+      meta: {
+        count: products.length,
+      },
+    };
   }
 
   async findOne(id: number) {

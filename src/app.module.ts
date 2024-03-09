@@ -12,6 +12,7 @@ import { PrismaModule } from './modules/prisma/prisma.module';
 import { WishlistModule } from './modules/wishlist/wishlist.module';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { CategoryModule } from './modules/category/category.module';
+import { SubcategoryModule } from './modules/subcategory/subcategory.module';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { CategoryModule } from './modules/category/category.module';
     NotificationModule,
     MediaModule,
     WishlistModule,
+    SubcategoryModule,
   ],
 })
 export class AppModule {}
