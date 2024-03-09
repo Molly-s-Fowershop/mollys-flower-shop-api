@@ -1,44 +1,17 @@
-import { PrismaService } from '@/modules/prisma/prisma.service';
 import { Body, Controller, Param, ParseIntPipe, Patch } from '@nestjs/common';
-import { ProductService } from '@modules/product/services/product.service';
-import { UpdateProductCategoryDto } from '@modules/product/dto/update-product-category.dto';
-import { CategoryService } from '@/modules/category/services/category.service';
+
+import { UpdateProductCategoryDto } from '@modules/product/dto';
+import { ProductCategoryService } from '@modules/product/services';
 
 @Controller('products/:productId/category')
 export class ProductCategoryController {
-  constructor(
-    private prisma: PrismaService,
-    private productService: ProductService,
-    private categoryService: CategoryService,
-  ) {}
+  constructor(private productCategoryService: ProductCategoryService) {}
 
   @Patch()
   async update(
     @Param('productId', ParseIntPipe) productId: number,
     @Body() dto: UpdateProductCategoryDto,
   ) {
-    await this.productService.findOne(productId);
-    await this.categoryService.findOne(dto.categoryId);
-
-    return await this.prisma.product.update({
-      where: {
-        id: productId,
-      },
-      data: {
-        category: {
-          connect: {
-            id: dto.categoryId,
-          },
-        },
-      },
-      include: {
-        category: {
-          select: {
-            id: true,
-            name: true,
-          },
-        },
-      },
-    });
+    return await this.productCategoryService.update(productId, dto);
   }
 }
