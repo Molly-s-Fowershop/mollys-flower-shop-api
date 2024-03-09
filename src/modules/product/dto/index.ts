@@ -3,3 +3,4 @@ export * from './update-product.dto';
 
 export * from './create-product-details.dto';
 export * from './update-product-category.dto';
+export * from './update-product-subcategory.dto';

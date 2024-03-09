@@ -61,6 +61,13 @@ export class ProductService {
             name: true,
           },
         },
+        subcategories: {
+          select: {
+            id: true,
+            name: true,
+            description: true,
+          },
+        },
       },
     });
 
