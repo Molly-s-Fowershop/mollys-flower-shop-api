@@ -289,12 +289,18 @@ enum MediaContextType {
 
 model Media {
   id               Int              @id @default(autoincrement())
+  title            String?
+  description      String?
+  s3Name           String
   url              String
+  type             String
   context          MediaContextType
   products         Product[]
   offers           Offer[]
   ProductDetails   ProductDetails?  @relation(fields: [productDetailsId], references: [id])
   productDetailsId Int?
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
 }
 
 // Notifications

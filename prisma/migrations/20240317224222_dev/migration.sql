@@ -80,7 +80,7 @@ CREATE TABLE "Category" (
 );
 
 -- CreateTable
-CREATE TABLE "SubCategory" (
+CREATE TABLE "Subcategory" (
     "id" SERIAL NOT NULL,
     "name" TEXT NOT NULL,
     "description" TEXT NOT NULL,
@@ -88,7 +88,7 @@ CREATE TABLE "SubCategory" (
     "updatedAt" TIMESTAMP(3) NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-    CONSTRAINT "SubCategory_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "Subcategory_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -236,9 +236,15 @@ CREATE TABLE "CouponCodeUse" (
 -- CreateTable
 CREATE TABLE "Media" (
     "id" SERIAL NOT NULL,
+    "title" TEXT,
+    "description" TEXT,
+    "s3Name" TEXT NOT NULL,
     "url" TEXT NOT NULL,
+    "type" TEXT NOT NULL,
     "context" "MediaContextType" NOT NULL,
     "productDetailsId" INTEGER,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "Media_pkey" PRIMARY KEY ("id")
 );
@@ -291,7 +297,7 @@ CREATE TABLE "WishlistItem" (
 );
 
 -- CreateTable
-CREATE TABLE "_ProductToSubCategory" (
+CREATE TABLE "_ProductToSubcategory" (
     "A" INTEGER NOT NULL,
     "B" INTEGER NOT NULL
 );
@@ -327,10 +333,10 @@ CREATE UNIQUE INDEX "users_email_key" ON "users"("email");
 CREATE UNIQUE INDEX "ProductDetails_productId_key" ON "ProductDetails"("productId");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "_ProductToSubCategory_AB_unique" ON "_ProductToSubCategory"("A", "B");
+CREATE UNIQUE INDEX "_ProductToSubcategory_AB_unique" ON "_ProductToSubcategory"("A", "B");
 
 -- CreateIndex
-CREATE INDEX "_ProductToSubCategory_B_index" ON "_ProductToSubCategory"("B");
+CREATE INDEX "_ProductToSubcategory_B_index" ON "_ProductToSubcategory"("B");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "_CustomizationGroupToProduct_AB_unique" ON "_CustomizationGroupToProduct"("A", "B");
@@ -366,7 +372,7 @@ ALTER TABLE "Product" ADD CONSTRAINT "Product_categoryId_fkey" FOREIGN KEY ("cat
 ALTER TABLE "ProductDetails" ADD CONSTRAINT "ProductDetails_productId_fkey" FOREIGN KEY ("productId") REFERENCES "Product"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "SubCategory" ADD CONSTRAINT "SubCategory_categoryId_fkey" FOREIGN KEY ("categoryId") REFERENCES "Category"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Subcategory" ADD CONSTRAINT "Subcategory_categoryId_fkey" FOREIGN KEY ("categoryId") REFERENCES "Category"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Customization" ADD CONSTRAINT "Customization_customizationGroupId_fkey" FOREIGN KEY ("customizationGroupId") REFERENCES "CustomizationGroup"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -438,10 +444,10 @@ ALTER TABLE "WishlistItem" ADD CONSTRAINT "WishlistItem_wishlistId_fkey" FOREIGN
 ALTER TABLE "WishlistItem" ADD CONSTRAINT "WishlistItem_productId_fkey" FOREIGN KEY ("productId") REFERENCES "Product"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "_ProductToSubCategory" ADD CONSTRAINT "_ProductToSubCategory_A_fkey" FOREIGN KEY ("A") REFERENCES "Product"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "_ProductToSubcategory" ADD CONSTRAINT "_ProductToSubcategory_A_fkey" FOREIGN KEY ("A") REFERENCES "Product"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "_ProductToSubCategory" ADD CONSTRAINT "_ProductToSubCategory_B_fkey" FOREIGN KEY ("B") REFERENCES "SubCategory"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "_ProductToSubcategory" ADD CONSTRAINT "_ProductToSubcategory_B_fkey" FOREIGN KEY ("B") REFERENCES "Subcategory"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "_CustomizationGroupToProduct" ADD CONSTRAINT "_CustomizationGroupToProduct_A_fkey" FOREIGN KEY ("A") REFERENCES "CustomizationGroup"("id") ON DELETE CASCADE ON UPDATE CASCADE;

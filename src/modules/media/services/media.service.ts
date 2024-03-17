@@ -1,26 +1,53 @@
-import { Injectable } from '@nestjs/common';
-import { CreateMediaDto } from '../dto/create-media.dto';
-import { UpdateMediaDto } from '../dto/update-media.dto';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { CreateMediaDto } from '../dto';
+import { PrismaService } from '@/modules/prisma/prisma.service';
+import { S3Service } from '@/modules/s3/services/s3.service';
+import { v4 as uuidv4 } from 'uuid';
 
 @Injectable()
 export class MediaService {
-  create(createMediaDto: CreateMediaDto) {
-    return 'This action adds a new media';
+  constructor(
+    private prisma: PrismaService,
+    private s3Service: S3Service,
+  ) {}
+
+  async findAll() {
+    return {
+      data: await this.prisma.media.findMany(),
+      meta: {
+        count: await this.prisma.media.count(),
+      },
+    };
   }
 
-  findAll() {
-    return `This action returns all media`;
+  async findOne(id: number) {
+    const media = await this.prisma.media.findUnique({
+      where: { id },
+    });
+
+    if (!media) {
+      throw new NotFoundException('Media not found');
+    }
+
+    return media;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} media`;
-  }
+  async create(dto: CreateMediaDto, file: Express.Multer.File) {
+    const key: string = uuidv4();
+    const { title, description, ...rest } = dto;
+    const { mimetype } = file;
 
-  update(id: number, updateMediaDto: UpdateMediaDto) {
-    return `This action updates a #${id} media`;
-  }
+    const { fileName, url } = await this.s3Service.upload(key, file);
 
-  remove(id: number) {
-    return `This action removes a #${id} media`;
+    return await this.prisma.media.create({
+      data: {
+        title,
+        s3Name: fileName,
+        description,
+        type: mimetype,
+        url,
+        ...rest,
+      },
+    });
   }
 }
