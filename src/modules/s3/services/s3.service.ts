@@ -2,6 +2,7 @@ import {
   PutObjectCommand,
   S3Client,
   PutObjectCommandInput,
+  DeleteObjectCommand,
 } from '@aws-sdk/client-s3';
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
@@ -36,6 +37,19 @@ export class S3Service {
         fileName,
         url: `https://${this.bucketName}.s3.${this.region}.amazonaws.com/${fileName}`,
       };
+    } catch (err) {
+      throw new BadRequestException(err.message);
+    }
+  }
+
+  async delete(key: string) {
+    const command = new DeleteObjectCommand({
+      Bucket: this.bucketName,
+      Key: key,
+    });
+
+    try {
+      await this.s3Client.send(command);
     } catch (err) {
       throw new BadRequestException(err.message);
     }

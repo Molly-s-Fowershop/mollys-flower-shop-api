@@ -1,25 +1,32 @@
 import { Module } from '@nestjs/common';
-import { ProductController } from './controllers/product.controller';
-import { CategoryModule } from '../category/category.module';
-import { ProductCategoryController } from './controllers/product-category.controller';
+import { CategoryModule } from '@/modules/category/category.module';
+import { MediaModule } from '@/modules/media/media.module';
+import {
+  ProductController,
+  ProductCategoryController,
+  ProductSubcategoryController,
+  ProductMediaController,
+} from './controllers';
 import {
   ProductService,
   ProductCategoryService,
   ProductSubcategoryService,
+  ProductMediaService,
 } from './services';
-import { ProductSubcategoryController } from './controllers/product-subcategory.controller';
 
 @Module({
-  imports: [CategoryModule],
+  imports: [CategoryModule, MediaModule],
   controllers: [
     ProductController,
     ProductCategoryController,
     ProductSubcategoryController,
+    ProductMediaController,
   ],
   providers: [
     ProductService,
     ProductCategoryService,
     ProductSubcategoryService,
+    ProductMediaService,
   ],
 })
 export class ProductModule {}
