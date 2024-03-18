@@ -4,14 +4,13 @@ import {
   Param,
   Post,
   UseInterceptors,
-  UploadedFile,
   Delete,
   Body,
   ParseIntPipe,
   UploadedFiles,
 } from '@nestjs/common';
 import { ProductMediaService } from '../services/product-media.service';
-import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
+import { FilesInterceptor } from '@nestjs/platform-express';
 import { DeleteProductMediaDto } from '../dto/delete-product-media.dto';
 
 @Controller('products/:productId/medias')
@@ -23,16 +22,7 @@ export class ProductMediaController {
     return await this.productMediaService.findProductMedias(productId);
   }
 
-  @Post()
-  @UseInterceptors(FileInterceptor('file'))
-  async createProductMedia(
-    @Param('productId', ParseIntPipe) productId: number,
-    @UploadedFile() file: Express.Multer.File,
-  ) {
-    return await this.productMediaService.createProductMedia(productId, file);
-  }
-
-  @Post('many')
+  @Post('')
   @UseInterceptors(FilesInterceptor('files'))
   async createMany(
     @Param('productId', ParseIntPipe) productId: number,

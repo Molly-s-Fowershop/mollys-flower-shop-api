@@ -3,7 +3,6 @@ import { PrismaService } from '@/modules/prisma/prisma.service';
 import { Injectable } from '@nestjs/common';
 import { ProductService } from './product.service';
 import { DeleteProductMediaDto } from '../dto/delete-product-media.dto';
-import { CreateMediaDto } from '@/modules/media/dto';
 
 @Injectable()
 export class ProductMediaService {
@@ -29,39 +28,6 @@ export class ProductMediaService {
         count: medias.length,
       },
     };
-  }
-
-  async createProductMedia(
-    productId: number,
-    file: Express.Multer.File,
-    dto?: CreateMediaDto,
-  ) {
-    await this.productService.findOne(productId);
-
-    const { title, description } = dto || {};
-
-    const media = await this.mediaService.create(
-      {
-        title: title ?? file.originalname,
-        description: description ?? '',
-      },
-      file,
-      'PRODUCT',
-    );
-
-    return await this.prisma.product.update({
-      where: { id: productId },
-      data: {
-        medias: {
-          connect: {
-            id: media.id,
-          },
-        },
-      },
-      include: {
-        medias: true,
-      },
-    });
   }
 
   async createManyProductMedia(
