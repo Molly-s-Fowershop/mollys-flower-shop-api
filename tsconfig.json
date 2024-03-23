@@ -12,7 +12,9 @@
     "baseUrl": "./",
     "paths": {
       "@/*": ["src/*"],
-      "@modules/*": ["src/modules/*"]
+      "@modules/*": ["src/modules/*"],
+      "@emails/*": ["src/shared/emails/*"],
+      "@assets/*": ["src/shared/assets/*"]
     },
     "incremental": true,
     "skipLibCheck": true,
@@ -20,6 +22,7 @@
     "noImplicitAny": false,
     "strictBindCallApply": false,
     "forceConsistentCasingInFileNames": false,
-    "noFallthroughCasesInSwitch": false
+    "noFallthroughCasesInSwitch": false,
+    "jsx": "react"
   }
 }
