@@ -14,6 +14,7 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
 import { CategoryModule } from './modules/category/category.module';
 import { SubcategoryModule } from './modules/subcategory/subcategory.module';
 import { S3Module } from './modules/s3/s3.module';
+import { EmailModule } from './modules/email/email.module';
 
 @Module({
   imports: [
@@ -32,6 +33,7 @@ import { S3Module } from './modules/s3/s3.module';
     WishlistModule,
     SubcategoryModule,
     S3Module,
+    EmailModule,
   ],
 })
 export class AppModule {}

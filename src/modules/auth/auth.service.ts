@@ -11,8 +11,7 @@ import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { PrismaService } from '@modules/prisma/prisma.service';
 import { User } from '@prisma/client';
-import { EventEmitter2 } from '@nestjs/event-emitter';
-import { CreateUserEvent } from '@modules/user/events/create-user.event';
+import { UserService } from '../user/services';
 
 @Injectable()
 export class AuthService {
@@ -20,7 +19,7 @@ export class AuthService {
     private jwt: JwtService,
     private config: ConfigService,
     private prisma: PrismaService,
-    private eventEmitter: EventEmitter2,
+    private userService: UserService,
   ) {}
 
   async validateToken(user: User, token: string) {
@@ -34,13 +33,10 @@ export class AuthService {
     const hashedPassword = await argon.hash(dto.password);
 
     try {
-      const user = await this.prisma.user.create({
-        data: {
-          ...omit(['password'], dto),
-          hashedPassword,
-        },
+      const user = await this.userService.create({
+        ...omit(['password'], dto),
+        hashedPassword,
       });
-      this.eventEmitter.emit('user.created', new CreateUserEvent(user));
 
       delete user.hashedPassword;
       return this.signToken(user.id, user.email, user.name);
