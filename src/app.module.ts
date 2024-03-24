@@ -14,7 +14,6 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
 import { CategoryModule } from './modules/category/category.module';
 import { SubcategoryModule } from './modules/subcategory/subcategory.module';
 import { S3Module } from './modules/s3/s3.module';
-import { EmailModule } from './modules/email/email.module';
 import { TwilioModule } from 'nestjs-twilio';
 
 @Module({
@@ -43,7 +42,6 @@ import { TwilioModule } from 'nestjs-twilio';
     WishlistModule,
     SubcategoryModule,
     S3Module,
-    EmailModule,
   ],
 })
 export class AppModule {}

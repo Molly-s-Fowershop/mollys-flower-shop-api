@@ -5,18 +5,14 @@ import { OnEvent } from '@nestjs/event-emitter';
 import { CreateUserDto } from '../dto/create-user.dto';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { CreateUserEvent } from '@modules/user/events/create-user.event';
-import { EmailService } from '@/modules/email/services';
-import Welcome from '@emails/user/Welcome';
-import { User } from '@prisma/client';
-import { SmsService } from '@/modules/sms/services';
+import { NotificationService } from '@/modules/notification/services';
 
 @Injectable()
 export class UserService {
   constructor(
     private prisma: PrismaService,
     private eventEmitter: EventEmitter2,
-    private emailService: EmailService,
-    private smsService: SmsService,
+    private notificationService: NotificationService,
   ) {}
 
   async findAll() {
@@ -78,21 +74,6 @@ export class UserService {
     });
   }
 
-  private async sendWelcomeEmail(user: User) {
-    await this.emailService.sendEmail({
-      to: user.email,
-      subject: "Hello from Molly's Flower Shop 🌸",
-      template: Welcome({ name: user.name }),
-    });
-  }
-
-  private async sendWelcomeSms(user: User) {
-    await this.smsService.sendSms({
-      to: user.phone,
-      message: `Hello, ${user.name}! Welcome to Molly's Flower Shop 🌸`,
-    });
-  }
-
   @OnEvent('user.created')
   async initialize({ user }: CreateUserEvent) {
     await this.prisma.cart.create({
@@ -115,7 +96,6 @@ export class UserService {
       },
     });
 
-    await this.sendWelcomeEmail(user);
-    await this.sendWelcomeSms(user);
+    await this.notificationService.sendWelcomeNotifications(user);
   }
 }
