@@ -21,6 +21,7 @@ model User {
   name             String
   lastname         String
   hashedPassword   String
+  phone            String
   address          Address[]
   cart             Cart[]
   couponCodeUse    CouponCodeUse[]
