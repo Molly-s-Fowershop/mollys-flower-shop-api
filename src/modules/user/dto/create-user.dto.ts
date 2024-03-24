@@ -25,5 +25,11 @@ export class CreateUserDto {
 
   @IsNotEmpty()
   @IsString()
+  @MinLength(12)
+  @MaxLength(15)
+  phone: string;
+
+  @IsNotEmpty()
+  @IsString()
   hashedPassword: string;
 }

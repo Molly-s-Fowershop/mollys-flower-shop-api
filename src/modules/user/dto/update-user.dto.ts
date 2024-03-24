@@ -12,4 +12,10 @@ export class UpdateUserDto {
   @MinLength(3)
   @MaxLength(30)
   lastname: string;
+
+  @IsOptional()
+  @IsString()
+  @MinLength(12)
+  @MaxLength(15)
+  phone: string;
 }

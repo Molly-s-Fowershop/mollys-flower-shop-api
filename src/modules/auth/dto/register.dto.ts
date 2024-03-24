@@ -28,4 +28,10 @@ export class RegisterDto {
   @IsNotEmpty()
   @MinLength(8)
   password: string;
+
+  @IsNotEmpty()
+  @IsString()
+  @MinLength(12)
+  @MaxLength(15)
+  phone: string;
 }

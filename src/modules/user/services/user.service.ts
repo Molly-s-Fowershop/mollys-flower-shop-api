@@ -8,6 +8,7 @@ import { CreateUserEvent } from '@modules/user/events/create-user.event';
 import { EmailService } from '@/modules/email/services';
 import Welcome from '@emails/user/Welcome';
 import { User } from '@prisma/client';
+import { SmsService } from '@/modules/sms/services';
 
 @Injectable()
 export class UserService {
@@ -15,6 +16,7 @@ export class UserService {
     private prisma: PrismaService,
     private eventEmitter: EventEmitter2,
     private emailService: EmailService,
+    private smsService: SmsService,
   ) {}
 
   async findAll() {
@@ -84,6 +86,13 @@ export class UserService {
     });
   }
 
+  private async sendWelcomeSms(user: User) {
+    await this.smsService.sendSms({
+      to: user.phone,
+      message: `Hello, ${user.name}! Welcome to Molly's Flower Shop 🌸`,
+    });
+  }
+
   @OnEvent('user.created')
   async initialize({ user }: CreateUserEvent) {
     await this.prisma.cart.create({
@@ -107,5 +116,6 @@ export class UserService {
     });
 
     await this.sendWelcomeEmail(user);
+    await this.sendWelcomeSms(user);
   }
 }
