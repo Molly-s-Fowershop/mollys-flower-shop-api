@@ -1,7 +1,7 @@
 import React from 'react';
 
-export type SendMailConfiguration = {
+export interface SendMailConfiguration {
   to: string;
   subject: string;
   template: React.ReactElement;
-};
+}

@@ -1,26 +1,73 @@
 import { Injectable } from '@nestjs/common';
-import { CreateNotificationDto } from '../dto/create-notification.dto';
-import { UpdateNotificationDto } from '../dto/update-notification.dto';
+import { ConfigService } from '@nestjs/config';
+import { renderAsync } from '@react-email/render';
+import { Transporter, createTransport } from 'nodemailer';
+import { ReactElement } from 'react';
+import { SendMailConfiguration } from '../interfaces/SendMailConfiguration';
+import { TwilioService } from 'nestjs-twilio';
+import { SendSmsRequest } from '../interfaces/SendSmsRequest';
+import Welcome from '@emails/user/Welcome';
+import { User } from '@prisma/client';
 
 @Injectable()
 export class NotificationService {
-  create(createNotificationDto: CreateNotificationDto) {
-    return 'This action adds a new notification';
+  private transporter: Transporter;
+
+  constructor(
+    private readonly twilioService: TwilioService,
+    private readonly config: ConfigService,
+  ) {
+    this.transporter = createTransport(
+      {
+        host: config.getOrThrow('EMAIL_HOST'),
+        port: config.getOrThrow('EMAIL_PORT'),
+        secure: false,
+        auth: {
+          user: config.getOrThrow('EMAIL_USER'),
+          pass: config.getOrThrow('EMAIL_PASSWORD'),
+        },
+      },
+      {
+        from: {
+          name: config.getOrThrow('EMAIL_FROM_NAME'),
+          address: config.getOrThrow('EMAIL_USER'),
+        },
+      },
+    );
   }
 
-  findAll() {
-    return `This action returns all notification`;
+  private async renderTemplate(template: ReactElement) {
+    return renderAsync(template);
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} notification`;
+  async sendEmail({ to, subject, template }: SendMailConfiguration) {
+    const html = await this.renderTemplate(template);
+
+    await this.transporter.sendMail({
+      to,
+      subject,
+      html,
+    });
   }
 
-  update(id: number, updateNotificationDto: UpdateNotificationDto) {
-    return `This action updates a #${id} notification`;
+  async sendSms({ to, message }: SendSmsRequest) {
+    return await this.twilioService.client.messages.create({
+      to,
+      body: message,
+      from: this.config.getOrThrow('TWILIO_PHONE_NUMBER'),
+    });
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} notification`;
+  async sendWelcomeNotifications(user: User) {
+    await this.sendEmail({
+      to: user.email,
+      subject: "Hello from Molly's Flower Shop 🌸",
+      template: Welcome({ name: user.name }),
+    });
+
+    await this.sendSms({
+      to: user.phone,
+      message: `Hello, ${user.name}! Welcome to Molly's Flower Shop 🌸`,
+    });
   }
 }
