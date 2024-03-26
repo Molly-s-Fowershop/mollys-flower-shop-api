@@ -1,13 +1,28 @@
 import { Module } from '@nestjs/common';
-import { CategoryController } from '@modules/category/controllers/category.controller';
-import { CategoryService } from './services/category.service';
-import { CategorySubcategoryController } from './controllers/category-subcategory.controller';
-import { CategorySubcategoryService } from './services/category-subcategory.service';
-import { SubcategoryService } from '../subcategory/services/subcategory.service';
+import { SubcategoryService } from '@modules/subcategory/services/subcategory.service';
+import {
+  CategoryService,
+  CategorySubcategoryService,
+  CategoryProductService,
+} from '@modules/category/services';
+import {
+  CategoryController,
+  CategorySubcategoryController,
+  CategoryProductController,
+} from '@modules/category/controllers';
 
 @Module({
-  controllers: [CategoryController, CategorySubcategoryController],
-  providers: [CategoryService, CategorySubcategoryService, SubcategoryService],
+  controllers: [
+    CategoryController,
+    CategorySubcategoryController,
+    CategoryProductController,
+  ],
+  providers: [
+    CategoryService,
+    CategorySubcategoryService,
+    CategoryProductService,
+    SubcategoryService,
+  ],
   exports: [CategoryService],
 })
 export class CategoryModule {}
