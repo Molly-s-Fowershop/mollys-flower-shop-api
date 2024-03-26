@@ -21,8 +21,7 @@ export class PaymentService {
         },
       ],
       mode: 'payment',
-      ui_mode: 'embedded',
-      return_url: 'https://example.com/return',
+      success_url: 'https://example.com/success',
     });
   }
 }
