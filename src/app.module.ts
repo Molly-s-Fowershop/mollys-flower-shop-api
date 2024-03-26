@@ -15,6 +15,7 @@ import { CategoryModule } from './modules/category/category.module';
 import { SubcategoryModule } from './modules/subcategory/subcategory.module';
 import { S3Module } from './modules/s3/s3.module';
 import { TwilioModule } from 'nestjs-twilio';
+import { PaymentModule } from './modules/payment/payment.module';
 
 @Module({
   imports: [
@@ -42,6 +43,7 @@ import { TwilioModule } from 'nestjs-twilio';
     WishlistModule,
     SubcategoryModule,
     S3Module,
+    PaymentModule,
   ],
 })
 export class AppModule {}
