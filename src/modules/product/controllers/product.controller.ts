@@ -20,6 +20,16 @@ export class ProductController {
     return this.productService.findAll();
   }
 
+  @Get('latest')
+  findLatest() {
+    return this.productService.findLatest();
+  }
+
+  @Get('popular')
+  findPopular() {
+    return this.productService.findPopular();
+  }
+
   @Get(':id')
   findOne(@Param('id', ParseIntPipe) id: number) {
     return this.productService.findOne(id);

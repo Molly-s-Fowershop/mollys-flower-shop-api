@@ -2,6 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateProductDto, UpdateProductDto } from '@modules/product/dto';
 import { PrismaService } from '@/modules/prisma/prisma.service';
 import { CategoryService } from '@/modules/category/services/category.service';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class ProductService {
@@ -9,6 +10,7 @@ export class ProductService {
     private prisma: PrismaService,
     private categoryService: CategoryService,
   ) {}
+
   async findAll() {
     const products = await this.prisma.product.findMany({
       include: {
@@ -45,6 +47,99 @@ export class ProductService {
       data: products,
       meta: {
         count: products.length,
+      },
+    };
+  }
+
+  async findLatest() {
+    const products = await this.prisma.product.findMany({
+      orderBy: {
+        createdAt: 'desc',
+      },
+      take: 8,
+      include: {
+        category: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+        productDetails: {
+          select: {
+            id: true,
+            price: true,
+            stock: true,
+            type: true,
+          },
+        },
+        productOffers: {
+          select: {
+            offer: {
+              select: {
+                id: true,
+                discountValue: true,
+                startDate: true,
+                endDate: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    return {
+      data: products,
+      meta: {
+        count: products.length,
+      },
+    };
+  }
+
+  async findPopular() {
+    const mostPopularProducts = await this.prisma.product.findMany({
+      select: {
+        id: true,
+        name: true,
+        description: true,
+        category: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+        productDetails: {
+          select: {
+            id: true,
+            price: true,
+            stock: true,
+            type: true,
+          },
+        },
+        productOffers: {
+          select: {
+            offer: {
+              select: {
+                id: true,
+                discountValue: true,
+                startDate: true,
+                endDate: true,
+              },
+            },
+          },
+        },
+      },
+      orderBy: {
+        orderItem: {
+          _count: Prisma.SortOrder.desc,
+        },
+      },
+      take: 8,
+    });
+
+    return {
+      data: mostPopularProducts,
+      meta: {
+        count: mostPopularProducts.length,
       },
     };
   }
