@@ -1,28 +1,33 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateMediaDto } from '../dto';
-import { PrismaService } from '@/modules/prisma/prisma.service';
 import { S3Service } from '@/modules/s3/services/s3.service';
 import { MediaContextType } from '@prisma/client';
 import { v4 as uuidv4 } from 'uuid';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Media } from '@/entities';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class MediaService {
   constructor(
-    private prisma: PrismaService,
+    @InjectRepository(Media)
+    private readonly mediaRepository: Repository<Media>,
     private s3Service: S3Service,
   ) {}
 
   async findAll() {
+    const medias = await this.mediaRepository.find();
+
     return {
-      data: await this.prisma.media.findMany(),
+      data: medias,
       meta: {
-        count: await this.prisma.media.count(),
+        count: medias.length,
       },
     };
   }
 
   async findOne(id: number) {
-    const media = await this.prisma.media.findUnique({
+    const media = await this.mediaRepository.findOne({
       where: { id },
     });
 
@@ -44,15 +49,13 @@ export class MediaService {
 
     const { fileName, url } = await this.s3Service.upload(key, file);
 
-    return await this.prisma.media.create({
-      data: {
-        title,
-        s3Name: fileName,
-        description,
-        type: mimetype,
-        url,
-        context,
-      },
+    return await this.mediaRepository.create({
+      title,
+      s3Name: fileName,
+      description,
+      type: mimetype,
+      url,
+      context,
     });
   }
 
@@ -69,15 +72,13 @@ export class MediaService {
 
         const { fileName, url } = await this.s3Service.upload(key, file);
 
-        return await this.prisma.media.create({
-          data: {
-            title,
-            s3Name: fileName,
-            description,
-            type: mimetype,
-            url,
-            context,
-          },
+        return this.mediaRepository.create({
+          title,
+          s3Name: fileName,
+          description,
+          type: mimetype,
+          url,
+          context,
         });
       }),
     );
@@ -86,18 +87,10 @@ export class MediaService {
   }
 
   async delete(id: number) {
-    const media = await this.prisma.media.findUnique({
-      where: { id },
-    });
-
-    if (!media) {
-      throw new NotFoundException('Media not found');
-    }
+    const media = await this.findOne(id);
 
     await this.s3Service.delete(media.s3Name);
 
-    return await this.prisma.media.delete({
-      where: { id },
-    });
+    return await this.mediaRepository.delete(id);
   }
 }
