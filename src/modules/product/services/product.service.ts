@@ -1,46 +1,21 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateProductDto, UpdateProductDto } from '@modules/product/dto';
-import { PrismaService } from '@/modules/prisma/prisma.service';
 import { CategoryService } from '@/modules/category/services/category.service';
-import { Prisma } from '@prisma/client';
+import { Product, ProductDetails } from '@/entities';
+import { Repository } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
 
 @Injectable()
 export class ProductService {
   constructor(
-    private prisma: PrismaService,
+    @InjectRepository(Product)
+    private readonly productRepository: Repository<Product>,
     private categoryService: CategoryService,
   ) {}
 
   async findAll() {
-    const products = await this.prisma.product.findMany({
-      include: {
-        category: {
-          select: {
-            id: true,
-            name: true,
-          },
-        },
-        productDetails: {
-          select: {
-            id: true,
-            price: true,
-            stock: true,
-            type: true,
-          },
-        },
-        productOffers: {
-          select: {
-            offer: {
-              select: {
-                id: true,
-                discountValue: true,
-                startDate: true,
-                endDate: true,
-              },
-            },
-          },
-        },
-      },
+    const products = await this.productRepository.find({
+      relations: ['category', 'productDetails', 'productOffers'],
     });
 
     return {
@@ -52,39 +27,12 @@ export class ProductService {
   }
 
   async findLatest() {
-    const products = await this.prisma.product.findMany({
-      orderBy: {
-        createdAt: 'desc',
+    const products = await this.productRepository.find({
+      order: {
+        createdAt: 'DESC',
       },
+      relations: ['category', 'productDetails', 'productOffers'],
       take: 8,
-      include: {
-        category: {
-          select: {
-            id: true,
-            name: true,
-          },
-        },
-        productDetails: {
-          select: {
-            id: true,
-            price: true,
-            stock: true,
-            type: true,
-          },
-        },
-        productOffers: {
-          select: {
-            offer: {
-              select: {
-                id: true,
-                discountValue: true,
-                startDate: true,
-                endDate: true,
-              },
-            },
-          },
-        },
-      },
     });
 
     return {
@@ -96,45 +44,13 @@ export class ProductService {
   }
 
   async findPopular() {
-    const mostPopularProducts = await this.prisma.product.findMany({
-      select: {
-        id: true,
-        name: true,
-        description: true,
-        category: {
-          select: {
-            id: true,
-            name: true,
-          },
-        },
-        productDetails: {
-          select: {
-            id: true,
-            price: true,
-            stock: true,
-            type: true,
-          },
-        },
-        productOffers: {
-          select: {
-            offer: {
-              select: {
-                id: true,
-                discountValue: true,
-                startDate: true,
-                endDate: true,
-              },
-            },
-          },
-        },
-      },
-      orderBy: {
-        orderItem: {
-          _count: Prisma.SortOrder.desc,
-        },
-      },
-      take: 8,
-    });
+    const mostPopularProducts = await this.productRepository
+      .createQueryBuilder('product')
+      .leftJoin('product.orderItems', 'orderItems')
+      .groupBy('product.id')
+      .orderBy('COUNT(orderItems.id)', 'DESC')
+      .limit(8)
+      .getMany();
 
     return {
       data: mostPopularProducts,
@@ -145,25 +61,11 @@ export class ProductService {
   }
 
   async findOne(id: number) {
-    const product = await this.prisma.product.findUnique({
+    const product = await this.productRepository.findOne({
       where: {
         id,
       },
-      include: {
-        category: {
-          select: {
-            id: true,
-            name: true,
-          },
-        },
-        subcategories: {
-          select: {
-            id: true,
-            name: true,
-            description: true,
-          },
-        },
-      },
+      relations: ['category', 'productDetails', 'productOffers'],
     });
 
     if (!product) {
@@ -173,53 +75,34 @@ export class ProductService {
   }
 
   async create(dto: CreateProductDto) {
-    const { categoryId, ...rest } = dto;
+    const { categoryId, productDetails: details, ...rest } = dto;
     await this.categoryService.findOne(categoryId);
 
-    return await this.prisma.product.create({
-      data: {
-        ...rest,
-        category: {
-          connect: {
-            id: dto.categoryId,
-          },
-        },
-        productDetails: {
-          create: {
-            ...dto.productDetails,
-          },
-        },
-      },
-      include: {
-        category: true,
-        productDetails: true,
-      },
-    });
+    const product = new Product(rest);
+    const productDetails = new ProductDetails(details);
+
+    product.productDetails = productDetails;
+
+    await this.productRepository.save(product);
+
+    await this.productRepository
+      .createQueryBuilder()
+      .relation(Product, 'category')
+      .of(product)
+      .set(categoryId);
+
+    return product;
   }
 
   async update(id: number, dto: UpdateProductDto) {
     await this.findOne(id);
 
-    return await this.prisma.product.update({
-      where: {
-        id,
-      },
-      data: {
-        ...dto,
-      },
-      include: {
-        category: true,
-      },
-    });
+    return await this.productRepository.update(id, dto);
   }
 
   async remove(id: number) {
     await this.findOne(id);
 
-    return await this.prisma.product.delete({
-      where: {
-        id,
-      },
-    });
+    return await this.productRepository.delete(id);
   }
 }

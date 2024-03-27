@@ -11,7 +11,7 @@ import { WishlistModule } from './modules/wishlist/wishlist.module';
 import { PaymentModule } from './modules/payment/payment.module';
 import { SubcategoryModule } from './modules/subcategory/subcategory.module';
 import { CategoryModule } from './modules/category/category.module';
-// import { ProductModule } from './modules/product/product.module';
+import { ProductModule } from './modules/product/product.module';
 // import { OrderModule } from './modules/order/order.module';
 // import { CartModule } from './modules/cart/cart.module';
 // import { OfferModule } from './modules/offer/offer.module';
@@ -39,7 +39,7 @@ import { CategoryModule } from './modules/category/category.module';
     PaymentModule,
     SubcategoryModule,
     CategoryModule,
-    // ProductModule,
+    ProductModule,
     // OrderModule,
     // CartModule,
     // OfferModule,

@@ -7,6 +7,7 @@ import {
   JoinColumn,
   CreateDateColumn,
   UpdateDateColumn,
+  OneToOne,
 } from 'typeorm';
 import {
   ProductDetails,
@@ -37,8 +38,8 @@ export class Product {
   @CreateDateColumn()
   createdAt: Date;
 
-  @OneToMany(() => ProductDetails, (productDetails) => productDetails.product)
-  productDetails: ProductDetails[];
+  @OneToOne(() => ProductDetails, (productDetails) => productDetails.product)
+  productDetails: ProductDetails;
 
   @ManyToOne(() => Category, (category) => category.products)
   @JoinColumn({ name: 'categoryId' })

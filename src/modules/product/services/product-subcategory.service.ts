@@ -1,12 +1,17 @@
-import { PrismaService } from '@/modules/prisma/prisma.service';
 import { ProductService } from '@/modules/product/services';
 import { MutateProductSubcategoryDto } from '@modules/product/dto';
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { Product, Subcategory } from '@/entities';
+import { Repository } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
 
 @Injectable()
 export class ProductSubcategoryService {
   constructor(
-    private prisma: PrismaService,
+    @InjectRepository(Product)
+    private readonly productRepository: Repository<Product>,
+    @InjectRepository(Subcategory)
+    private readonly subcategoryRepository: Repository<Subcategory>,
     private productService: ProductService,
   ) {}
 
@@ -14,14 +19,11 @@ export class ProductSubcategoryService {
     await this.productService.findOne(productId);
 
     try {
-      await this.prisma.product.update({
-        where: { id: productId },
-        data: {
-          subcategories: {
-            set: dto.subcategoryIds.map((id) => ({ id })),
-          },
-        },
-      });
+      await this.productRepository
+        .createQueryBuilder()
+        .relation(Product, 'subcategories')
+        .of(productId)
+        .add(dto.subcategoryIds);
     } catch (error) {
       throw new NotFoundException('Subcategories not found');
     }
@@ -32,14 +34,15 @@ export class ProductSubcategoryService {
   async remove(productId: number, dto: MutateProductSubcategoryDto) {
     await this.productService.findOne(productId);
 
-    await this.prisma.product.update({
-      where: { id: productId },
-      data: {
-        subcategories: {
-          disconnect: dto.subcategoryIds.map((id) => ({ id })),
-        },
-      },
-    });
+    try {
+      await this.productRepository
+        .createQueryBuilder()
+        .relation(Product, 'subcategories')
+        .of(productId)
+        .remove(dto.subcategoryIds);
+    } catch (error) {
+      throw new NotFoundException('Subcategories not found');
+    }
 
     return this.getSubcategories(productId);
   }

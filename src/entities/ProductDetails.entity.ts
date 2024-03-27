@@ -2,9 +2,10 @@ import {
   Entity,
   PrimaryGeneratedColumn,
   Column,
-  OneToMany,
   CreateDateColumn,
   UpdateDateColumn,
+  OneToOne,
+  JoinColumn,
 } from 'typeorm';
 import { Product } from '.';
 
@@ -31,7 +32,8 @@ export class ProductDetails {
   @CreateDateColumn()
   createdAt: Date;
 
-  @OneToMany(() => Product, (product) => product.productDetails)
+  @OneToOne(() => Product, (product) => product.productDetails)
+  @JoinColumn({ name: 'productId' })
   product: Product;
 
   constructor(item: Partial<ProductDetails>) {
