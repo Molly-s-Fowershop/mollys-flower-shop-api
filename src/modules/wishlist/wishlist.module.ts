@@ -4,7 +4,8 @@ import { WishlistService } from './services';
 import { OrmModule } from '@modules/orm/orm.module';
 
 @Module({
-  controllers: [WishlistController, OrmModule],
+  imports: [OrmModule],
+  controllers: [WishlistController],
   providers: [WishlistService],
 })
 export class WishlistModule {}

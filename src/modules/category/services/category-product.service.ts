@@ -1,43 +1,25 @@
-import { PrismaService } from '@/modules/prisma/prisma.service';
 import { Injectable } from '@nestjs/common';
+import { Category, Product } from '@/entities';
+import { Repository } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
 
 @Injectable()
 export class CategoryProductService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    @InjectRepository(Category)
+    private readonly categoryRepository: Repository<Category>,
+    @InjectRepository(Product)
+    private readonly productRepository: Repository<Product>,
+  ) {}
 
   async findProductsByCategoryId(categoryId: number) {
-    const products = await this.prisma.product.findMany({
+    const products = await this.productRepository.find({
       where: {
-        categoryId,
-      },
-      include: {
         category: {
-          select: {
-            id: true,
-            name: true,
-          },
-        },
-        productDetails: {
-          select: {
-            id: true,
-            price: true,
-            stock: true,
-            type: true,
-          },
-        },
-        productOffers: {
-          select: {
-            offer: {
-              select: {
-                id: true,
-                discountValue: true,
-                startDate: true,
-                endDate: true,
-              },
-            },
-          },
+          id: categoryId,
         },
       },
+      relations: ['category', 'productDetails', 'productOffers'],
     });
 
     return {

@@ -9,13 +9,13 @@ import { S3Module } from './modules/s3/s3.module';
 import { MediaModule } from './modules/media/media.module';
 import { WishlistModule } from './modules/wishlist/wishlist.module';
 import { PaymentModule } from './modules/payment/payment.module';
+import { SubcategoryModule } from './modules/subcategory/subcategory.module';
+import { CategoryModule } from './modules/category/category.module';
 // import { ProductModule } from './modules/product/product.module';
 // import { OrderModule } from './modules/order/order.module';
 // import { CartModule } from './modules/cart/cart.module';
 // import { OfferModule } from './modules/offer/offer.module';
 // import { NotificationModule } from './modules/notification/notification.module';
-// import { CategoryModule } from './modules/category/category.module';
-// import { SubcategoryModule } from './modules/subcategory/subcategory.module';
 
 @Module({
   imports: [
@@ -37,13 +37,13 @@ import { PaymentModule } from './modules/payment/payment.module';
     S3Module,
     WishlistModule,
     PaymentModule,
-    // CategoryModule,
+    SubcategoryModule,
+    CategoryModule,
     // ProductModule,
     // OrderModule,
     // CartModule,
     // OfferModule,
     // NotificationModule,
-    // SubcategoryModule,
   ],
 })
 export class AppModule {}
