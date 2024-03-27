@@ -16,9 +16,21 @@ import { SubcategoryModule } from './modules/subcategory/subcategory.module';
 import { S3Module } from './modules/s3/s3.module';
 import { TwilioModule } from 'nestjs-twilio';
 import { PaymentModule } from './modules/payment/payment.module';
+import { TypeOrmModule } from '@nestjs/typeorm';
 
 @Module({
   imports: [
+    TypeOrmModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: (cfg: ConfigService) => ({
+        type: 'postgres',
+        entities: [__dirname + '/src/entities/**/*.entity{.ts,.js}'],
+        url: cfg.getOrThrow('DATABASE_URL'),
+        synchronize: true,
+        autoLoadEntities: true,
+      }),
+      inject: [ConfigService],
+    }),
     TwilioModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: (cfg: ConfigService) => ({
