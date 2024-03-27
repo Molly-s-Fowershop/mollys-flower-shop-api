@@ -12,8 +12,8 @@ import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { JwtGuard } from './guard';
 import { GetUser } from './decorator';
-import { User } from '@prisma/client';
 import { GetJwt } from './decorator/getJwt.decorator';
+import { User } from '@/entities';
 
 @Controller('auth')
 export class AuthController {

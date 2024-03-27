@@ -69,5 +69,6 @@ import {
       CustomizationGroup,
     ]),
   ],
+  exports: [TypeOrmModule],
 })
 export class OrmModule {}

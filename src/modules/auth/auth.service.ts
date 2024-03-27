@@ -9,16 +9,17 @@ import * as argon from 'argon2';
 import { omit } from 'rambda';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
-import { PrismaService } from '@modules/prisma/prisma.service';
-import { User } from '@prisma/client';
 import { UserService } from '../user/services';
+import { InjectRepository } from '@nestjs/typeorm';
+import { User } from '@/entities';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class AuthService {
   constructor(
+    @InjectRepository(User) private readonly userRepository: Repository<User>,
     private jwt: JwtService,
     private config: ConfigService,
-    private prisma: PrismaService,
     private userService: UserService,
   ) {}
 
@@ -27,7 +28,7 @@ export class AuthService {
   }
 
   async register(dto: RegisterDto) {
-    if (await this.prisma.user.findFirst({ where: { email: dto.email } }))
+    if (await this.userRepository.findOne({ where: { email: dto.email } }))
       throw new BadRequestException('This email is already taken');
 
     const hashedPassword = await argon.hash(dto.password);
@@ -46,7 +47,7 @@ export class AuthService {
   }
 
   async login(dto: LoginDto) {
-    const user = await this.prisma.user.findFirst({
+    const user = await this.userRepository.findOne({
       where: {
         email: dto.email,
       },
