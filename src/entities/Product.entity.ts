@@ -60,7 +60,7 @@ export class Product {
   productOffers: ProductOffer[];
 
   @OneToMany(() => WishlistItem, (wishlistItem) => wishlistItem.product)
-  wishListItem: WishlistItem[];
+  wishlistItem: WishlistItem[];
 
   @OneToMany(
     () => CustomizationGroup,

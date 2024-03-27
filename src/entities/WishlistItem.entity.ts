@@ -30,7 +30,7 @@ export class WishlistItem {
   @JoinColumn({ name: 'wishlistId' })
   wishlist: Wishlist;
 
-  @ManyToOne(() => Product, (product) => product.wishListItem)
+  @ManyToOne(() => Product, (product) => product.wishlistItem)
   @JoinColumn({ name: 'productId' })
   product: Product;
 
