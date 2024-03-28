@@ -10,14 +10,15 @@ import {
 } from '@nestjs/common';
 import { ProductService } from '@modules/product/services/product.service';
 import { CreateProductDto, UpdateProductDto } from '@modules/product/dto';
+import { Paginate, PaginateQuery } from 'nestjs-paginate';
 
 @Controller('products')
 export class ProductController {
   constructor(private readonly productService: ProductService) {}
 
   @Get()
-  findAll() {
-    return this.productService.findAll();
+  findAll(@Paginate() query: PaginateQuery) {
+    return this.productService.findAll(query);
   }
 
   @Get('latest')
