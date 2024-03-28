@@ -13,9 +13,10 @@ import {
   ProductSubcategoryService,
   ProductMediaService,
 } from './services';
+import { OrmModule } from '../orm/orm.module';
 
 @Module({
-  imports: [CategoryModule, MediaModule],
+  imports: [CategoryModule, MediaModule, OrmModule],
   controllers: [
     ProductController,
     ProductCategoryController,

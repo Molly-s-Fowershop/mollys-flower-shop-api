@@ -65,9 +65,10 @@ export class NotificationService {
       template: Welcome({ name: user.name }),
     });
 
-    await this.sendSms({
-      to: user.phone,
-      message: `Hello, ${user.name}! Welcome to Molly's Flower Shop 🌸`,
-    });
+    // * Uncomment this code if you want to send an SMS to the user
+    // await this.sendSms({
+    //   to: user.phone,
+    //   message: `Hello, ${user.name}! Welcome to Molly's Flower Shop 🌸`,
+    // });
   }
 }

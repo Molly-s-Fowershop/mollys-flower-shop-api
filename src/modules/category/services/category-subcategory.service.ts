@@ -1,4 +1,3 @@
-import { PrismaService } from '@/modules/prisma/prisma.service';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { CategoryService } from './category.service';
 import {
@@ -6,11 +5,17 @@ import {
   MutateCategorySubcategoryDto,
 } from '../dto';
 import { SubcategoryService } from '@/modules/subcategory/services/subcategory.service';
+import { Category, Subcategory } from '@/entities';
+import { Repository } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
 
 @Injectable()
 export class CategorySubcategoryService {
   constructor(
-    private prisma: PrismaService,
+    @InjectRepository(Category)
+    private readonly categoryRepository: Repository<Category>,
+    @InjectRepository(Subcategory)
+    private readonly subcategoryRepository: Repository<Subcategory>,
     private categoryService: CategoryService,
     private subcategoryService: SubcategoryService,
   ) {}
@@ -18,9 +23,9 @@ export class CategorySubcategoryService {
   async findAll(categoryId: number) {
     await this.categoryService.findOne(categoryId);
 
-    const subcategories = await this.prisma.subcategory.findMany({
-      where: {
-        categoryId,
+    const subcategories = await this.subcategoryRepository.findBy({
+      category: {
+        id: categoryId,
       },
     });
 
@@ -45,15 +50,17 @@ export class CategorySubcategoryService {
   }
 
   async create(categoryId: number, dto: CreateCategorySubcategoryDto) {
-    await this.categoryService.findOne(categoryId);
+    const category = await this.categoryService.findOne(categoryId);
 
-    await this.prisma.subcategory.createMany({
-      data: dto.subcategories.map((subcategory) => ({
-        ...subcategory,
-        categoryId,
-      })),
-      skipDuplicates: true,
-    });
+    const subcategories = await Promise.all(
+      dto.subcategories.map((subcategory) => {
+        return this.subcategoryRepository.save(subcategory);
+      }),
+    );
+
+    category.subcategories.push(...subcategories);
+
+    await this.categoryRepository.save(category);
 
     return await this.getSubcategories(categoryId);
   }
@@ -63,16 +70,11 @@ export class CategorySubcategoryService {
     await this.categoryService.findOne(categoryId);
 
     try {
-      await this.prisma.category.update({
-        where: {
-          id: categoryId,
-        },
-        data: {
-          subcategories: {
-            connect: dto.subcategoryIds.map((id) => ({ id })),
-          },
-        },
-      });
+      await this.categoryRepository
+        .createQueryBuilder()
+        .relation(Category, 'subcategories')
+        .of(categoryId)
+        .add(dto.subcategoryIds);
     } catch (err) {
       throw new NotFoundException('Subcategories not found');
     }
@@ -83,13 +85,11 @@ export class CategorySubcategoryService {
   async remove(categoryId: number, dto: MutateCategorySubcategoryDto) {
     await this.categoryService.findOne(categoryId);
 
-    await this.prisma.subcategory.deleteMany({
-      where: {
-        id: {
-          in: dto.subcategoryIds,
-        },
-      },
-    });
+    await this.categoryRepository
+      .createQueryBuilder()
+      .relation(Category, 'subcategories')
+      .of(categoryId)
+      .remove(dto.subcategoryIds);
 
     return await this.getSubcategories(categoryId);
   }
@@ -99,6 +99,9 @@ export class CategorySubcategoryService {
 
     return {
       data: subcategories,
+      meta: {
+        count: subcategories.length,
+      },
     };
   }
 }

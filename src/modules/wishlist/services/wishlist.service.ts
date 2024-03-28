@@ -1,24 +1,35 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { User, Wishlist } from '@prisma/client';
+import { User } from '@prisma/client';
 import {
   UpdateWishlistDto,
   WishlistUpdateType,
 } from '@modules/wishlist/dto/update-wishlist.dto';
-import { PrismaService } from '@/modules/prisma/prisma.service';
+import { Repository } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Product, Wishlist, WishlistItem } from '@/entities';
 
 @Injectable()
 export class WishlistService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    @InjectRepository(Product)
+    private readonly productRepository: Repository<Product>,
+    @InjectRepository(Wishlist)
+    private readonly wishlistRepository: Repository<Wishlist>,
+    @InjectRepository(WishlistItem)
+    private readonly wishlistItemRepository: Repository<WishlistItem>,
+  ) {}
 
   async get(userId: number) {
-    const wishlist = await this.prisma.wishlist.findFirst({
+    const wishlist = await this.wishlistRepository.findOne({
       where: {
         userId,
       },
-      include: {
-        items: true,
-      },
+      relations: ['items'],
     });
+
+    if (!wishlist) {
+      throw new NotFoundException('Wishlist not found');
+    }
 
     return wishlist;
   }
@@ -26,7 +37,7 @@ export class WishlistService {
   async updateItem(user: User, dto: UpdateWishlistDto) {
     const { productId } = dto;
 
-    const product = await this.prisma.product.findUnique({
+    const product = await this.productRepository.findOne({
       where: {
         id: productId,
       },
@@ -36,7 +47,7 @@ export class WishlistService {
       throw new NotFoundException('Product not found');
     }
 
-    const wishlist = await this.prisma.wishlist.findFirst({
+    const wishlist = await this.wishlistRepository.findOne({
       where: {
         userId: user.id,
       },
@@ -59,19 +70,9 @@ export class WishlistService {
   ) {
     const { productId } = dto;
 
-    await this.prisma.wishlistItem.create({
-      data: {
-        product: {
-          connect: {
-            id: productId,
-          },
-        },
-        wishlist: {
-          connect: {
-            id: wishlist.id,
-          },
-        },
-      },
+    await this.wishlistItemRepository.create({
+      productId: productId,
+      wishlistId: wishlist.id,
     });
 
     return `This action adds a new wishlist item widh id ${dto.productId} to user ${user.id}`;
@@ -84,14 +85,13 @@ export class WishlistService {
   ) {
     const { productId } = dto;
 
-    await this.prisma.wishlistItem.delete({
-      where: {
-        id: {
-          wishlistId: wishlist.id,
-          productId: productId,
-        },
-      },
-    });
+    await this.wishlistItemRepository
+      .createQueryBuilder()
+      .delete()
+      .from(WishlistItem)
+      .where('productId = :productId', { productId })
+      .andWhere('wishlistId = :wishlistId', { wishlistId: wishlist.id })
+      .execute();
 
     return `This action removes a wishlist item widh id ${dto.productId} from user ${user.id}`;
   }

@@ -10,8 +10,10 @@ import {
   CategorySubcategoryController,
   CategoryProductController,
 } from '@modules/category/controllers';
+import { OrmModule } from '@modules/orm/orm.module';
 
 @Module({
+  imports: [OrmModule],
   controllers: [
     CategoryController,
     CategorySubcategoryController,

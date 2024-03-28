@@ -1,12 +1,17 @@
-import { PrismaService } from '@/modules/prisma/prisma.service';
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { Subcategory } from '@/entities';
+import { Repository } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
 
 @Injectable()
 export class SubcategoryService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    @InjectRepository(Subcategory)
+    private readonly subcategoryRepository: Repository<Subcategory>,
+  ) {}
 
   async findAll() {
-    const subcategories = await this.prisma.subcategory.findMany();
+    const subcategories = await this.subcategoryRepository.find();
 
     return {
       data: subcategories,
@@ -17,11 +22,7 @@ export class SubcategoryService {
   }
 
   async findOne(subcategoryId: number) {
-    const subcategory = await this.prisma.subcategory.findUnique({
-      where: {
-        id: subcategoryId,
-      },
-    });
+    const subcategory = await this.findOne(subcategoryId);
 
     if (!subcategory) {
       throw new NotFoundException('Subcategory not found');

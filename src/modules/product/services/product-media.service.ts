@@ -1,13 +1,16 @@
 import { MediaService } from '@/modules/media/services/media.service';
-import { PrismaService } from '@/modules/prisma/prisma.service';
 import { Injectable } from '@nestjs/common';
 import { ProductService } from './product.service';
 import { DeleteProductMediaDto } from '../dto/delete-product-media.dto';
+import { Product } from '@/entities';
+import { Repository } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
 
 @Injectable()
 export class ProductMediaService {
   constructor(
-    private prisma: PrismaService,
+    @InjectRepository(Product)
+    private readonly productRepository: Repository<Product>,
     private mediaService: MediaService,
     private productService: ProductService,
   ) {}
@@ -15,11 +18,9 @@ export class ProductMediaService {
   async findProductMedias(productId: number) {
     await this.productService.findOne(productId);
 
-    const { medias } = await this.prisma.product.findUnique({
+    const { medias } = await this.productRepository.findOne({
       where: { id: productId },
-      include: {
-        medias: true,
-      },
+      relations: ['medias'],
     });
 
     return {
@@ -49,17 +50,13 @@ export class ProductMediaService {
       ),
     );
 
-    return await this.prisma.product.update({
-      where: { id: productId },
-      data: {
-        medias: {
-          connect: medias.map((media) => ({ id: media.id })),
-        },
-      },
-      include: {
-        medias: true,
-      },
-    });
+    await this.productRepository
+      .createQueryBuilder()
+      .relation(Product, 'medias')
+      .of(productId)
+      .add(medias);
+
+    return await this.findProductMedias(productId);
   }
 
   async deleteProductMedia(productId: number, dto: DeleteProductMediaDto) {
@@ -73,16 +70,10 @@ export class ProductMediaService {
       }),
     );
 
-    return await this.prisma.product.update({
-      where: { id: productId },
-      data: {
-        medias: {
-          disconnect: mediaIds.map((id) => ({ id })),
-        },
-      },
-      include: {
-        medias: true,
-      },
-    });
+    return await this.productRepository
+      .createQueryBuilder()
+      .relation(Product, 'medias')
+      .of(productId)
+      .remove(mediaIds);
   }
 }

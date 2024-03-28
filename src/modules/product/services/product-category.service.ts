@@ -1,13 +1,16 @@
 import { Injectable } from '@nestjs/common';
 import { UpdateProductCategoryDto } from '@modules/product/dto/update-product-category.dto';
-import { PrismaService } from '@/modules/prisma/prisma.service';
 import { ProductService } from '@modules/product/services/product.service';
 import { CategoryService } from '@/modules/category/services/category.service';
+import { Product } from '@/entities';
+import { Repository } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
 
 @Injectable()
 export class ProductCategoryService {
   constructor(
-    private prisma: PrismaService,
+    @InjectRepository(Product)
+    private readonly productRepository: Repository<Product>,
     private productService: ProductService,
     private categoryService: CategoryService,
   ) {}
@@ -16,25 +19,12 @@ export class ProductCategoryService {
     await this.productService.findOne(productId);
     await this.categoryService.findOne(dto.categoryId);
 
-    return await this.prisma.product.update({
-      where: {
-        id: productId,
-      },
-      data: {
-        category: {
-          connect: {
-            id: dto.categoryId,
-          },
-        },
-      },
-      include: {
-        category: {
-          select: {
-            id: true,
-            name: true,
-          },
-        },
-      },
-    });
+    await this.productRepository
+      .createQueryBuilder()
+      .relation(Product, 'categories')
+      .of(productId)
+      .add(dto.categoryId);
+
+    return this.productService.findOne(productId);
   }
 }

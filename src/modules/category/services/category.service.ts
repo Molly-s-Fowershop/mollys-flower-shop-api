@@ -1,14 +1,20 @@
-import { PrismaService } from '@/modules/prisma/prisma.service';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateCategoryDto, UpdateCategoryDto } from '@modules/category/dto';
-import { Prisma } from '@prisma/client';
+import { Category, OrderItem } from '@/entities';
+import { In, Repository } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
 
 @Injectable()
 export class CategoryService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    @InjectRepository(Category)
+    private readonly categoryRepository: Repository<Category>,
+    @InjectRepository(OrderItem)
+    private readonly orderItemRepository: Repository<OrderItem>,
+  ) {}
 
   async findAll() {
-    const categories = await this.prisma.category.findMany();
+    const categories = await this.categoryRepository.find();
 
     return {
       data: categories,
@@ -19,72 +25,32 @@ export class CategoryService {
   }
 
   async findPopular() {
-    const mostPopularProducts = await this.prisma.product.findMany({
-      select: {
-        category: {
-          select: {
-            id: true,
-          },
-        },
-      },
-      orderBy: {
-        orderItem: {
-          _count: Prisma.SortOrder.desc,
-        },
-      },
-    });
+    const categoryIds: number[] = await this.orderItemRepository
+      .createQueryBuilder('orderItem')
+      .leftJoinAndSelect('orderItem.product', 'product')
+      .leftJoinAndSelect('product.category', 'category')
+      .select('category.id')
+      .addSelect('COUNT(category.id)', 'count')
+      .groupBy('category.id')
+      .orderBy('count', 'DESC')
+      .getRawMany();
 
-    const categoryIds = mostPopularProducts.map(
-      (product) => product.category.id,
-    );
-
-    const categories = await this.prisma.category.findMany({
-      where: {
-        id: {
-          in: categoryIds,
-        },
-      },
+    const mostPopularCategories = await this.categoryRepository.findBy({
+      id: In(categoryIds),
     });
 
     return {
-      data: categories,
+      data: mostPopularCategories,
       meta: {
-        count: categories.length,
+        count: mostPopularCategories.length,
       },
     };
   }
 
-  // async findPopular() {
-  //   const mostPopularCategories = (await this.prisma.$queryRaw`
-  //     SELECT c.id, c.name, c.description, COUNT(oi.id) AS totalSales
-  //     FROM "Category" c
-  //     JOIN "Product" p ON c.id = p."categoryId"
-  //     JOIN "OrderItem" oi ON p.id = oi."productId"
-  //     GROUP BY c.id
-  //     ORDER BY totalSales DESC
-  //     LIMIT ${8};
-  //   `) as any[];
-
-  //   return {
-  //     data: mostPopularCategories,
-  //     meta: {
-  //       count: mostPopularCategories.length,
-  //     },
-  //   };
-  // }
-
   async findOne(categoryId: number) {
-    const category = await this.prisma.category.findUnique({
+    const category = await this.categoryRepository.findOne({
       where: { id: categoryId },
-      include: {
-        subcategories: {
-          select: {
-            id: true,
-            name: true,
-            description: true,
-          },
-        },
-      },
+      relations: ['products', 'subcategories'],
     });
 
     if (!category) {
@@ -94,25 +60,20 @@ export class CategoryService {
   }
 
   async create(dto: CreateCategoryDto) {
-    return await this.prisma.category.create({
-      data: dto,
-    });
+    const category = await this.categoryRepository.save(dto);
+
+    return category;
   }
 
   async update(categoryId: number, dto: UpdateCategoryDto) {
     await this.findOne(categoryId);
+    await this.categoryRepository.update(categoryId, dto);
 
-    return this.prisma.category.update({
-      where: { id: categoryId },
-      data: dto,
-    });
+    return this.findOne(categoryId);
   }
 
   async remove(categoryId: number) {
     await this.findOne(categoryId);
-
-    return this.prisma.category.delete({
-      where: { id: categoryId },
-    });
+    await this.categoryRepository.delete(categoryId);
   }
 }
