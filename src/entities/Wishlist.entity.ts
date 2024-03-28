@@ -2,11 +2,11 @@ import {
   Entity,
   PrimaryGeneratedColumn,
   Column,
-  ManyToOne,
   JoinColumn,
   CreateDateColumn,
   UpdateDateColumn,
   OneToMany,
+  OneToOne,
 } from 'typeorm';
 import { WishlistItem, User } from '.';
 
@@ -24,7 +24,7 @@ export class Wishlist {
   @CreateDateColumn()
   createdAt: Date;
 
-  @ManyToOne(() => User, (user) => user.wishList)
+  @OneToOne(() => User, (user) => user.wishlist)
   @JoinColumn({ name: 'userId' })
   user: User;
 

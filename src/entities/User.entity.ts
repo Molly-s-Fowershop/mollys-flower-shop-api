@@ -35,11 +35,14 @@ export class User {
   @CreateDateColumn()
   createdAt: Date;
 
+  @OneToOne(() => Cart, (cart) => cart.user)
+  cart: Cart;
+
+  @OneToOne(() => Wishlist, (wishlist) => wishlist.user)
+  wishlist: Wishlist;
+
   @OneToMany(() => Address, (address) => address.user)
   addresses: Address[];
-
-  @OneToOne(() => Cart, (cart) => cart.user)
-  cart: Cart[];
 
   @OneToMany(() => CouponCodeUse, (couponCodeUse) => couponCodeUse.user)
   couponCodeUse: CouponCodeUse[];
@@ -49,9 +52,6 @@ export class User {
     (userNotification) => userNotification.user,
   )
   userNotification: UserNotification[];
-
-  @OneToMany(() => Wishlist, (wishlist) => wishlist.user)
-  wishList: Wishlist[];
 
   constructor(item: Partial<User>) {
     Object.assign(this, item);

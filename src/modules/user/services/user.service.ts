@@ -5,20 +5,25 @@ import { CreateUserDto } from '../dto/create-user.dto';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { CreateUserEvent } from '@modules/user/events/create-user.event';
 import { NotificationService } from '@/modules/notification/services';
+import { User, Cart, Wishlist } from '@/entities';
 import { InjectRepository } from '@nestjs/typeorm';
-import { User } from '@/entities';
 import { Repository } from 'typeorm';
 
 @Injectable()
 export class UserService {
   constructor(
     @InjectRepository(User) private readonly userRepository: Repository<User>,
+    @InjectRepository(Cart) private readonly cartRepository: Repository<Cart>,
+    @InjectRepository(Wishlist)
+    private readonly wishlistRepository: Repository<Wishlist>,
     private eventEmitter: EventEmitter2,
     private notificationService: NotificationService,
   ) {}
 
   async findAll() {
-    const users = await this.userRepository.find();
+    const users = await this.userRepository.find({
+      relations: ['cart', 'wishlist'],
+    });
 
     return {
       data: users,
@@ -61,25 +66,17 @@ export class UserService {
 
   @OnEvent('user.created')
   async initialize({ user }: CreateUserEvent) {
-    // await this.prisma.cart.create({
-    //   data: {
-    //     user: {
-    //       connect: {
-    //         id: user.id,
-    //       },
-    //     },
-    //   },
-    // });
+    await this.cartRepository.save({
+      user: {
+        id: user.id,
+      },
+    });
 
-    // await this.prisma.wishlist.create({
-    //   data: {
-    //     user: {
-    //       connect: {
-    //         id: user.id,
-    //       },
-    //     },
-    //   },
-    // });
+    await this.wishlistRepository.save({
+      user: {
+        id: user.id,
+      },
+    });
 
     await this.notificationService.sendWelcomeNotifications(user);
   }

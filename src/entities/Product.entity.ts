@@ -49,7 +49,7 @@ export class Product {
   subcategories: Subcategory[];
 
   @OneToMany(() => OrderItem, (orderItem) => orderItem.product)
-  orderItem: OrderItem[];
+  orderItems: OrderItem[];
 
   @OneToMany(() => CartItem, (cartItem) => cartItem.product)
   cartItems: CartItem[];

@@ -12,10 +12,10 @@ import { PaymentModule } from './modules/payment/payment.module';
 import { SubcategoryModule } from './modules/subcategory/subcategory.module';
 import { CategoryModule } from './modules/category/category.module';
 import { ProductModule } from './modules/product/product.module';
-// import { OrderModule } from './modules/order/order.module';
-// import { CartModule } from './modules/cart/cart.module';
-// import { OfferModule } from './modules/offer/offer.module';
-// import { NotificationModule } from './modules/notification/notification.module';
+import { OrderModule } from './modules/order/order.module';
+import { CartModule } from './modules/cart/cart.module';
+import { OfferModule } from './modules/offer/offer.module';
+import { NotificationModule } from './modules/notification/notification.module';
 
 @Module({
   imports: [
@@ -40,10 +40,10 @@ import { ProductModule } from './modules/product/product.module';
     SubcategoryModule,
     CategoryModule,
     ProductModule,
-    // OrderModule,
-    // CartModule,
-    // OfferModule,
-    // NotificationModule,
+    OrderModule,
+    CartModule,
+    OfferModule,
+    NotificationModule,
   ],
 })
 export class AppModule {}

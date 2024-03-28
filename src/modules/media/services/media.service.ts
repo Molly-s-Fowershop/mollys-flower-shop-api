@@ -49,7 +49,7 @@ export class MediaService {
 
     const { fileName, url } = await this.s3Service.upload(key, file);
 
-    return await this.mediaRepository.create({
+    return await this.mediaRepository.save({
       title,
       s3Name: fileName,
       description,

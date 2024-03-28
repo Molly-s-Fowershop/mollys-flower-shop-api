@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateCategoryDto, UpdateCategoryDto } from '@modules/category/dto';
-import { Category } from '@/entities';
-import { Repository } from 'typeorm';
+import { Category, OrderItem } from '@/entities';
+import { In, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 
 @Injectable()
@@ -9,6 +9,8 @@ export class CategoryService {
   constructor(
     @InjectRepository(Category)
     private readonly categoryRepository: Repository<Category>,
+    @InjectRepository(OrderItem)
+    private readonly orderItemRepository: Repository<OrderItem>,
   ) {}
 
   async findAll() {
@@ -23,20 +25,19 @@ export class CategoryService {
   }
 
   async findPopular() {
-    const mostPopularCategories = await this.categoryRepository
-      .createQueryBuilder('category')
-      .select([
-        'category.id',
-        'category.name',
-        'category.description',
-        'COUNT(orderItem.id) AS totalSales',
-      ])
-      .leftJoin('category.products', 'product')
-      .leftJoin('product.orderItems', 'orderItem')
+    const categoryIds: number[] = await this.orderItemRepository
+      .createQueryBuilder('orderItem')
+      .leftJoinAndSelect('orderItem.product', 'product')
+      .leftJoinAndSelect('product.category', 'category')
+      .select('category.id')
+      .addSelect('COUNT(category.id)', 'count')
       .groupBy('category.id')
-      .orderBy('totalSales', 'DESC')
-      .limit(8)
+      .orderBy('count', 'DESC')
       .getRawMany();
+
+    const mostPopularCategories = await this.categoryRepository.findBy({
+      id: In(categoryIds),
+    });
 
     return {
       data: mostPopularCategories,
@@ -59,18 +60,20 @@ export class CategoryService {
   }
 
   async create(dto: CreateCategoryDto) {
-    return this.categoryRepository.create(dto);
+    const category = await this.categoryRepository.save(dto);
+
+    return category;
   }
 
   async update(categoryId: number, dto: UpdateCategoryDto) {
     await this.findOne(categoryId);
+    await this.categoryRepository.update(categoryId, dto);
 
-    return this.categoryRepository.update(categoryId, dto);
+    return this.findOne(categoryId);
   }
 
   async remove(categoryId: number) {
     await this.findOne(categoryId);
-
-    return this.categoryRepository.delete(categoryId);
+    await this.categoryRepository.delete(categoryId);
   }
 }
