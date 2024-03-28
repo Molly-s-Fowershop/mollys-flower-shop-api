@@ -52,9 +52,11 @@ export class CategorySubcategoryService {
   async create(categoryId: number, dto: CreateCategorySubcategoryDto) {
     const category = await this.categoryService.findOne(categoryId);
 
-    const subcategories = dto.subcategories.map((subcategory) => {
-      return this.subcategoryRepository.create(subcategory);
-    });
+    const subcategories = await Promise.all(
+      dto.subcategories.map((subcategory) => {
+        return this.subcategoryRepository.save(subcategory);
+      }),
+    );
 
     category.subcategories.push(...subcategories);
 
@@ -97,6 +99,9 @@ export class CategorySubcategoryService {
 
     return {
       data: subcategories,
+      meta: {
+        count: subcategories.length,
+      },
     };
   }
 }
