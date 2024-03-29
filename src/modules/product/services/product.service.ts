@@ -1,8 +1,8 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateProductDto, UpdateProductDto } from '@modules/product/dto';
 import { CategoryService } from '@/modules/category/services/category.service';
-import { Product, ProductDetails } from '@/entities';
-import { Repository } from 'typeorm';
+import { Order, OrderItem, Product, ProductDetails } from '@/entities';
+import { In, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import {
   FilterOperator,
@@ -18,6 +18,10 @@ export class ProductService {
     private readonly productRepository: Repository<Product>,
     @InjectRepository(ProductDetails)
     private readonly productDetailsRepository: Repository<ProductDetails>,
+    @InjectRepository(Order)
+    private readonly orderRepository: Repository<Order>,
+    @InjectRepository(OrderItem)
+    private readonly orderItemRepository: Repository<OrderItem>,
     private categoryService: CategoryService,
   ) {}
 
@@ -57,13 +61,22 @@ export class ProductService {
   }
 
   async findPopular() {
-    const mostPopularProducts = await this.productRepository
-      .createQueryBuilder('product')
-      .leftJoin('product.orderItems', 'orderItems')
-      .groupBy('product.id')
-      .orderBy('COUNT(orderItems.id)', 'DESC')
+    const productIds = await this.orderItemRepository
+      .createQueryBuilder('orderItem')
+      .select('orderItem.productId')
+      .addSelect('COUNT(orderItem.productId)', 'count')
+      .groupBy('orderItem.productId')
+      .orderBy('COUNT(orderItem.productId)', 'DESC')
+      .select('orderItem.productId')
       .limit(8)
-      .getMany();
+      .getRawMany();
+
+    const mostPopularProducts = await this.productRepository.find({
+      where: {
+        id: In(productIds.map((item) => item['orderItem_productId'])),
+      },
+      relations: ['category', 'productDetails', 'productOffers'],
+    });
 
     return {
       data: mostPopularProducts,
