@@ -1,29 +1,46 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateProductDto, UpdateProductDto } from '@modules/product/dto';
 import { CategoryService } from '@/modules/category/services/category.service';
-import { Product, ProductDetails } from '@/entities';
-import { Repository } from 'typeorm';
+import { Order, OrderItem, Product, ProductDetails } from '@/entities';
+import { In, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
+import {
+  FilterOperator,
+  FilterSuffix,
+  paginate,
+  type PaginateQuery,
+} from 'nestjs-paginate';
 
 @Injectable()
 export class ProductService {
   constructor(
     @InjectRepository(Product)
     private readonly productRepository: Repository<Product>,
+    @InjectRepository(ProductDetails)
+    private readonly productDetailsRepository: Repository<ProductDetails>,
+    @InjectRepository(Order)
+    private readonly orderRepository: Repository<Order>,
+    @InjectRepository(OrderItem)
+    private readonly orderItemRepository: Repository<OrderItem>,
     private categoryService: CategoryService,
   ) {}
 
-  async findAll() {
-    const products = await this.productRepository.find({
+  async findAll(query: PaginateQuery) {
+    return paginate(query, this.productRepository, {
       relations: ['category', 'productDetails', 'productOffers'],
-    });
-
-    return {
-      data: products,
-      meta: {
-        count: products.length,
+      sortableColumns: ['id', 'name', 'productDetails.price', 'createdAt'],
+      nullSort: 'last',
+      defaultSortBy: [['createdAt', 'DESC']],
+      searchableColumns: ['name', 'description'],
+      loadEagerRelations: true,
+      filterableColumns: {
+        name: [FilterOperator.EQ, FilterSuffix.NOT],
+        'productDetails.price': [FilterOperator.EQ, FilterOperator.GT],
+        'productDetails.type': [FilterOperator.EQ, FilterSuffix.NOT],
+        'category.name': [FilterOperator.EQ, FilterSuffix.NOT],
+        'category.id': [FilterOperator.EQ],
       },
-    };
+    });
   }
 
   async findLatest() {
@@ -44,13 +61,22 @@ export class ProductService {
   }
 
   async findPopular() {
-    const mostPopularProducts = await this.productRepository
-      .createQueryBuilder('product')
-      .leftJoin('product.orderItems', 'orderItems')
-      .groupBy('product.id')
-      .orderBy('COUNT(orderItems.id)', 'DESC')
+    const productIds = await this.orderItemRepository
+      .createQueryBuilder('orderItem')
+      .select('orderItem.productId')
+      .addSelect('COUNT(orderItem.productId)', 'count')
+      .groupBy('orderItem.productId')
+      .orderBy('COUNT(orderItem.productId)', 'DESC')
+      .select('orderItem.productId')
       .limit(8)
-      .getMany();
+      .getRawMany();
+
+    const mostPopularProducts = await this.productRepository.find({
+      where: {
+        id: In(productIds.map((item) => item['orderItem_productId'])),
+      },
+      relations: ['category', 'productDetails', 'productOffers'],
+    });
 
     return {
       data: mostPopularProducts,
@@ -78,18 +104,20 @@ export class ProductService {
     const { categoryId, productDetails: details, ...rest } = dto;
     await this.categoryService.findOne(categoryId);
 
-    const product = new Product(rest);
-    const productDetails = new ProductDetails(details);
-
-    product.productDetails = productDetails;
-
-    await this.productRepository.save(product);
+    const product = await this.productRepository.save(rest);
+    const productDetails = await this.productDetailsRepository.save(details);
 
     await this.productRepository
       .createQueryBuilder()
       .relation(Product, 'category')
       .of(product)
       .set(categoryId);
+
+    await this.productRepository
+      .createQueryBuilder()
+      .relation(Product, 'productDetails')
+      .of(product)
+      .set(productDetails);
 
     return product;
   }

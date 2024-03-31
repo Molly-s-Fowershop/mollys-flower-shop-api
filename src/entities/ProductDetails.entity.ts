@@ -14,7 +14,7 @@ export class ProductDetails {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column()
+  @Column('decimal', { precision: 5, scale: 2 })
   price: number;
 
   @Column()
@@ -32,7 +32,7 @@ export class ProductDetails {
   @CreateDateColumn()
   createdAt: Date;
 
-  @OneToOne(() => Product, (product) => product.productDetails)
+  @OneToOne(() => Product, (product) => product.productDetails, { eager: true })
   @JoinColumn({ name: 'productId' })
   product: Product;
 

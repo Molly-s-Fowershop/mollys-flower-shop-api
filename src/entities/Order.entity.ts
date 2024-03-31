@@ -17,7 +17,7 @@ export class Order {
   userId: number;
 
   @Column({ nullable: true })
-  couponId: number;
+  couponId?: number;
 
   @UpdateDateColumn()
   updatedAt: Date;
