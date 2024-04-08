@@ -27,7 +27,7 @@ import {
   Customization,
   CustomizationGroup,
   CouponCode,
-} from '@/entities';
+} from '@/db/entities';
 
 @Module({
   imports: [
@@ -35,7 +35,7 @@ import {
       imports: [ConfigModule],
       useFactory: (cfg: ConfigService) => ({
         type: 'postgres',
-        entities: [__dirname + '/src/entities/**/*.entity{.ts,.js}'],
+        entities: [__dirname + '/src/db/entities/**/*.entity{.ts,.js}'],
         url: cfg.getOrThrow('DATABASE_URL'),
         synchronize: true,
         autoLoadEntities: true,

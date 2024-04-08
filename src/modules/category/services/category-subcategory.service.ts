@@ -5,7 +5,7 @@ import {
   MutateCategorySubcategoryDto,
 } from '../dto';
 import { SubcategoryService } from '@/modules/subcategory/services/subcategory.service';
-import { Category, Subcategory } from '@/entities';
+import { Category, Subcategory } from '@/db/entities';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 

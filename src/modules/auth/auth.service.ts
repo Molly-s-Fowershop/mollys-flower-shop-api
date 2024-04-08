@@ -11,7 +11,7 @@ import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { UserService } from '../user/services';
 import { InjectRepository } from '@nestjs/typeorm';
-import { User } from '@/entities';
+import { User } from '@/db/entities';
 import { Repository } from 'typeorm';
 
 @Injectable()

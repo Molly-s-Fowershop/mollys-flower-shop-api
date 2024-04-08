@@ -6,7 +6,7 @@ import {
 } from '@modules/wishlist/dto/update-wishlist.dto';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Product, Wishlist, WishlistItem } from '@/entities';
+import { Product, Wishlist, WishlistItem } from '@/db/entities';
 
 @Injectable()
 export class WishlistService {

@@ -15,7 +15,7 @@ import {
 import { CategoryService } from '../services/category.service';
 import { CreateCategoryDto, UpdateCategoryDto } from '../dto';
 
-@UseGuards(JwtGuard)
+// @UseGuards(JwtGuard)
 @Controller('categories')
 export class CategoryController {
   constructor(private categoryService: CategoryService) {}

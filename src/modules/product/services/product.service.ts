@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateProductDto, UpdateProductDto } from '@modules/product/dto';
 import { CategoryService } from '@/modules/category/services/category.service';
-import { Order, OrderItem, Product, ProductDetails } from '@/entities';
+import { Order, OrderItem, Product, ProductDetails } from '@/db/entities';
 import { In, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import {
@@ -119,7 +119,7 @@ export class ProductService {
       .of(product)
       .set(productDetails);
 
-    return product;
+    return this.findOne(product.id);
   }
 
   async update(id: number, dto: UpdateProductDto) {

@@ -2,7 +2,7 @@ import { MediaService } from '@/modules/media/services/media.service';
 import { Injectable } from '@nestjs/common';
 import { ProductService } from './product.service';
 import { DeleteProductMediaDto } from '../dto/delete-product-media.dto';
-import { Product } from '@/entities';
+import { Product } from '@/db/entities';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 

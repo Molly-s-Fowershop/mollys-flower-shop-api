@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { UpdateProductCategoryDto } from '@modules/product/dto/update-product-category.dto';
 import { ProductService } from '@modules/product/services/product.service';
 import { CategoryService } from '@/modules/category/services/category.service';
-import { Product } from '@/entities';
+import { Product } from '@/db/entities';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 

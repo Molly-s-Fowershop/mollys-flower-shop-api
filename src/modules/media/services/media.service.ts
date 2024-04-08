@@ -4,7 +4,7 @@ import { S3Service } from '@/modules/s3/services/s3.service';
 import { MediaContextType } from '@prisma/client';
 import { v4 as uuidv4 } from 'uuid';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Media } from '@/entities';
+import { Media } from '@/db/entities';
 import { Repository } from 'typeorm';
 
 @Injectable()

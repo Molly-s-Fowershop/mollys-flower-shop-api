@@ -5,7 +5,7 @@ import { CreateUserDto } from '../dto/create-user.dto';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { CreateUserEvent } from '@modules/user/events/create-user.event';
 import { NotificationService } from '@/modules/notification/services';
-import { User, Cart, Wishlist } from '@/entities';
+import { User, Cart, Wishlist } from '@/db/entities';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 

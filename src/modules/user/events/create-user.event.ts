@@ -1,4 +1,4 @@
-import { User } from '@/entities';
+import { User } from '@/db/entities';
 
 export class CreateUserEvent {
   user: User;

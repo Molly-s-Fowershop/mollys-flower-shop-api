@@ -1,5 +1,5 @@
-import { ProductType } from '@prisma/client';
-import { IsEnum, IsNotEmpty, IsNumber, IsOptional } from 'class-validator';
+import { IsNotEmpty, IsNumber, IsOptional } from 'class-validator';
+import { ProductType } from '@/db/entities/ProductDetails.entity';
 
 export class CreateProductDetailsDto {
   @IsNotEmpty()
@@ -11,7 +11,6 @@ export class CreateProductDetailsDto {
   stock: number;
 
   @IsNotEmpty()
-  @IsEnum(ProductType)
   type: ProductType;
 
   @IsOptional()

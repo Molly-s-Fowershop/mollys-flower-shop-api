@@ -32,6 +32,9 @@ export class Product {
   @Column()
   description: string;
 
+  @Column({ nullable: true })
+  categoryId: number;
+
   @UpdateDateColumn()
   updatedAt: Date;
 

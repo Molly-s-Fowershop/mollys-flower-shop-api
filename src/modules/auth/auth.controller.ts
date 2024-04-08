@@ -13,7 +13,7 @@ import { LoginDto } from './dto/login.dto';
 import { JwtGuard } from './guard';
 import { GetUser } from './decorator';
 import { GetJwt } from './decorator/getJwt.decorator';
-import { User } from '@/entities';
+import { User } from '@/db/entities';
 
 @Controller('auth')
 export class AuthController {

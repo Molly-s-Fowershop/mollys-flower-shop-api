@@ -1,7 +1,7 @@
 import { ProductService } from '@/modules/product/services';
 import { MutateProductSubcategoryDto } from '@modules/product/dto';
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { Product, Subcategory } from '@/entities';
+import { Product, Subcategory } from '@/db/entities';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 
