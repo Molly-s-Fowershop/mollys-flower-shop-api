@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateMediaDto } from '../dto';
 import { S3Service } from '@/modules/s3/services/s3.service';
-import { MediaContextType } from '@prisma/client';
+import { MediaContextType } from '@/db/entities';
 import { v4 as uuidv4 } from 'uuid';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Media } from '@/db/entities';

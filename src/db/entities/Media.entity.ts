@@ -6,8 +6,16 @@ import {
   JoinColumn,
   CreateDateColumn,
   UpdateDateColumn,
+  OneToOne,
 } from 'typeorm';
 import { Product } from '.';
+
+export const MediaContext = {
+  PRODUCT: 'product',
+  CATEGORY: 'category',
+} as const;
+
+export type MediaContextType = (typeof MediaContext)[keyof typeof MediaContext];
 
 @Entity()
 export class Media {
@@ -30,7 +38,7 @@ export class Media {
   type: string;
 
   @Column()
-  context: string;
+  context: MediaContextType;
 
   @Column({ nullable: true })
   productDetailsId: number;
@@ -44,6 +52,9 @@ export class Media {
   @ManyToOne(() => Product, (product) => product.medias)
   @JoinColumn({ name: 'productId' })
   products: Product;
+
+  @OneToOne(() => Product, (product) => product.profileImage)
+  profileImage: Product;
 
   constructor(item: Partial<Media>) {
     Object.assign(this, item);

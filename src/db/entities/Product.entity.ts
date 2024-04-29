@@ -35,13 +35,18 @@ export class Product {
   @Column({ nullable: true })
   categoryId: number;
 
+  @Column({ nullable: true })
+  profileImageId: number;
+
   @UpdateDateColumn()
   updatedAt: Date;
 
   @CreateDateColumn()
   createdAt: Date;
 
-  @OneToOne(() => ProductDetails, (productDetails) => productDetails.product)
+  @OneToOne(() => ProductDetails, (productDetails) => productDetails.product, {
+    eager: true,
+  })
   productDetails: ProductDetails;
 
   @ManyToOne(() => Category, (category) => category.products)
@@ -56,6 +61,10 @@ export class Product {
 
   @OneToMany(() => CartItem, (cartItem) => cartItem.product)
   cartItems: CartItem[];
+
+  @OneToOne(() => Media, (media) => media.products, { eager: true })
+  @JoinColumn({ name: 'profileImageId' })
+  profileImage: Media;
 
   @OneToMany(() => Media, (media) => media.products)
   medias: Media[];

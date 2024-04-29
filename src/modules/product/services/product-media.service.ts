@@ -45,7 +45,7 @@ export class ProductMediaService {
             description: '',
           },
           file,
-          'PRODUCT',
+          'product',
         ),
       ),
     );

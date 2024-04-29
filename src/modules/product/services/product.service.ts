@@ -27,7 +27,13 @@ export class ProductService {
 
   async findAll(query: PaginateQuery) {
     return paginate(query, this.productRepository, {
-      relations: ['category', 'productDetails', 'productOffers'],
+      relations: [
+        'category',
+        'productDetails',
+        'productOffers',
+        'medias',
+        'profileImage',
+      ],
       sortableColumns: ['id', 'name', 'productDetails.price', 'createdAt'],
       nullSort: 'last',
       defaultSortBy: [['createdAt', 'DESC']],
@@ -91,7 +97,7 @@ export class ProductService {
       where: {
         id,
       },
-      relations: ['category', 'productDetails', 'productOffers'],
+      relations: ['category', 'productDetails', 'productOffers', 'medias'],
     });
 
     if (!product) {
